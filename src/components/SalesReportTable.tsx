@@ -127,7 +127,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
         
         <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Total sum Qty</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Total Units</span>
             <h4 className="text-2xl font-black text-slate-800 font-mono">
               {reportStats.totalQty.toLocaleString('en-IN')}
               <span className="text-xs font-semibold text-slate-400 ml-1">pcs</span>
@@ -153,7 +153,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
         <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Unique Simplified</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Unique Products</span>
             <h4 className="text-2xl font-black text-slate-800 font-mono">
               {reportStats.uniqueProducts}
               <span className="text-xs font-semibold text-slate-400 ml-1">skus</span>
@@ -190,7 +190,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
           <input
             id="report-search-input"
             type="text"
-            placeholder="Search report by Simplified, Portal, Quality, Size..."
+            placeholder="Search report by Product Name, Portal Name, Item, Size..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-250 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-colors"
@@ -259,7 +259,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 >
                   <div className="flex items-center gap-1.5">
                     <Calendar size={12} className="text-slate-400" />
-                    Packed On
+                    Order Date
                     <ArrowUpDown size={12} className={sortField === 'date' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>
@@ -270,7 +270,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                   onClick={() => requestSort('product')}
                 >
                   <div className="flex items-center gap-1.5">
-                    Simplified
+                    Product Name
                     <ArrowUpDown size={12} className={sortField === 'product' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>
@@ -281,7 +281,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                   onClick={() => requestSort('units')}
                 >
                   <div className="flex items-center justify-end gap-1.5">
-                    sum Qty
+                    Units
                     <ArrowUpDown size={12} className={sortField === 'units' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>
@@ -292,7 +292,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                   onClick={() => requestSort('portal')}
                 >
                   <div className="flex items-center gap-1.5">
-                    Portal
+                    Portal Name
                     <ArrowUpDown size={12} className={sortField === 'portal' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>
@@ -303,7 +303,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                   onClick={() => requestSort('quality')}
                 >
                   <div className="flex items-center gap-1.5">
-                    Product Quality
+                    Item
                     <ArrowUpDown size={12} className={sortField === 'quality' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>

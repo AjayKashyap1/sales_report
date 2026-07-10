@@ -674,7 +674,7 @@ export default function App() {
                 {/* 1. Simplified Product Name selection */}
                 <SearchableDropdown
                   id="simplified"
-                  label="Simplified"
+                  label="Product Name"
                   options={filterOptions.products}
                   selectedValues={selectedProducts}
                   onChange={setSelectedProducts}
@@ -684,7 +684,7 @@ export default function App() {
                 {/* 2. Portal selection */}
                 <SearchableDropdown
                   id="portal"
-                  label="Portal"
+                  label="Portal Name"
                   options={filterOptions.portals}
                   selectedValues={selectedPortals}
                   onChange={setSelectedPortals}
@@ -694,11 +694,11 @@ export default function App() {
                 {/* 3. Product Quality selection */}
                 <SearchableDropdown
                   id="quality"
-                  label="Product Quality"
+                  label="Item"
                   options={filterOptions.qualities}
                   selectedValues={selectedQualities}
                   onChange={setSelectedQualities}
-                  placeholder="All Qualities"
+                  placeholder="All Items"
                 />
 
                 {/* 4. Size selection */}

@@ -16,7 +16,7 @@ export function downloadCSV(csvContent: string, filename: string) {
 
 // 1. Export records/transactions to CSV
 export function exportRecordsToCSV(records: any[], filename: string = 'sales_transactions.csv') {
-  const headers = ['Packed On', 'Simplified', 'sum Qty', 'Portal', 'Product Quality', 'Size', 'Colour', 'Image Link'];
+  const headers = ['Order Date', 'Product Name', 'Units', 'Portal Name', 'Item', 'Size', 'Colour', 'Image Link'];
   const rows = records.map(r => [
     r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date).split('T')[0],
     r.product,
@@ -43,7 +43,7 @@ export function exportRecordsToPDF(records: any[], filename: string = 'sales_tra
   doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
   doc.text(`Total Records: ${records.length}`, 14, 26);
   
-  const headers = [['Packed On', 'Simplified', 'sum Qty', 'Portal', 'Product Quality', 'Size', 'Colour', 'Image Link']];
+  const headers = [['Order Date', 'Product Name', 'Units', 'Portal Name', 'Item', 'Size', 'Colour', 'Image Link']];
   const body = records.map(r => [
     r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date).split('T')[0],
     r.product,
@@ -70,7 +70,7 @@ export function exportRecordsToPDF(records: any[], filename: string = 'sales_tra
 
 // 3. Export Rolling Run Rate Table to CSV
 export function exportRunRateToCSV(rows: any[], segmentType: 'PORTAL' | 'PRODUCT', filename: string = 'rolling_run_rates.csv') {
-  const nameHeader = segmentType === 'PORTAL' ? 'Marketplace Portal' : 'Column C (Simpiled)';
+  const nameHeader = segmentType === 'PORTAL' ? 'Portal Name' : 'Product Name';
   const headers = [nameHeader, '3-Month Avg Units', '6-Month Avg Units', '12-Month Avg Units', 'Total Units Sold'];
   const dataRows = rows.map(r => [
     r.name,
@@ -95,7 +95,7 @@ export function exportRunRateToPDF(rows: any[], segmentType: 'PORTAL' | 'PRODUCT
   doc.setFontSize(9);
   doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
   
-  const nameHeader = segmentType === 'PORTAL' ? 'Marketplace Portal' : 'Column C (Simpiled)';
+  const nameHeader = segmentType === 'PORTAL' ? 'Portal Name' : 'Product Name';
   const headers = [[nameHeader, '3-Month Avg', '6-Month Avg', '12-Month Avg', 'Total Units']];
   const body = rows.map(r => [
     r.name,
@@ -125,7 +125,7 @@ export function exportRunRateToPDF(rows: any[], segmentType: 'PORTAL' | 'PRODUCT
 
 // 5. Export Stock Planner Table to CSV
 export function exportStockPlannerToCSV(rows: any[], filename: string = 'stock_planner.csv') {
-  const headers = ['Column C (Simpiled)', '3M Run Rate Units', '6-Month Demand Projection', 'Current Stock Qty', 'Net Requirement Units', 'Status'];
+  const headers = ['Product Name', '3M Run Rate Units', '6-Month Demand Projection', 'Current Stock Qty', 'Net Requirement Units', 'Status'];
   const dataRows = rows.map(r => [
     r.productName,
     r.runRate,
@@ -149,7 +149,7 @@ export function exportStockPlannerToPDF(rows: any[], filename: string = 'stock_p
   doc.setFontSize(9);
   doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
   
-  const headers = [['Column C (Simpiled)', '3M Run Rate', '6M Projected Demand', 'Current Stock', 'Net Req.', 'Status']];
+  const headers = [['Product Name', '3M Run Rate', '6M Projected Demand', 'Current Stock', 'Net Req.', 'Status']];
   const body = rows.map(r => [
     r.productName,
     `${r.runRate} units/mo`,
