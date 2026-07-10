@@ -190,7 +190,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
           <input
             id="report-search-input"
             type="text"
-            placeholder="Search report by Simplified SKU, Portal, Quality, Size..."
+            placeholder="Search report by Simplified, Portal, Quality, Size..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-250 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-colors"
@@ -270,7 +270,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                   onClick={() => requestSort('product')}
                 >
                   <div className="flex items-center gap-1.5">
-                    Simplified (Column C)
+                    Simplified
                     <ArrowUpDown size={12} className={sortField === 'product' ? 'text-blue-600' : 'text-slate-300'} />
                   </div>
                 </th>

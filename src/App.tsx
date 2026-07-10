@@ -9,6 +9,7 @@ import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
 import SalesReportTable from './components/SalesReportTable';
+import SearchableDropdown from './components/SearchableDropdown';
 import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet } from 'lucide-react';
 
 export default function App() {
@@ -21,14 +22,15 @@ export default function App() {
   
   // Advanced Multi-Select Filters States
   const [selectedPortals, setSelectedPortals] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColours, setSelectedColours] = useState<string[]>([]);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
   
   const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>({
-    url: '',
-    isEnabled: false,
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaZ6A9O82NanD3WNLDnSOb2FIpNVPFnef3RN_DoeudGep31MAL6CQE5sUlbIDe-U7nxVBX0z2TVThw/pub?gid=1397264212&single=true&output=csv',
+    isEnabled: true,
     refreshInterval: 10,
     lastFetched: null,
     status: 'IDLE',
@@ -40,22 +42,17 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 5000);
   }, []);
 
-  // Load initial beautiful mock dataset
-  useEffect(() => {
-    const initialRecords = generateDemoData();
-    setRecords(initialRecords);
-    showToast('🚀 System initialized with 15-month historical retail sales demo data.');
-  }, [showToast]);
-
   // Derive unique filter values
   const filterOptions = React.useMemo(() => {
     const portals = new Set<string>();
+    const products = new Set<string>();
     const qualities = new Set<string>();
     const sizes = new Set<string>();
     const colours = new Set<string>();
 
     records.forEach(r => {
       if (r.portal) portals.add(r.portal);
+      if (r.product) products.add(r.product);
       if (r.quality) qualities.add(r.quality);
       if (r.size) sizes.add(r.size);
       if (r.colour) colours.add(r.colour);
@@ -63,6 +60,7 @@ export default function App() {
 
     return {
       portals: Array.from(portals).filter(Boolean).sort(),
+      products: Array.from(products).filter(Boolean).sort(),
       qualities: Array.from(qualities).filter(Boolean).sort(),
       sizes: Array.from(sizes).filter(Boolean).sort(),
       colours: Array.from(colours).filter(Boolean).sort()
@@ -73,15 +71,17 @@ export default function App() {
   const filteredRecords = React.useMemo(() => {
     return records.filter(r => {
       const matchesPortal = selectedPortals.length === 0 || selectedPortals.includes(r.portal);
+      const matchesProduct = selectedProducts.length === 0 || selectedProducts.includes(r.product);
       const matchesQuality = selectedQualities.length === 0 || (r.quality && selectedQualities.includes(r.quality));
       const matchesSize = selectedSizes.length === 0 || (r.size && selectedSizes.includes(r.size));
       const matchesColour = selectedColours.length === 0 || (r.colour && selectedColours.includes(r.colour));
-      return matchesPortal && matchesQuality && matchesSize && matchesColour;
+      return matchesPortal && matchesProduct && matchesQuality && matchesSize && matchesColour;
     });
-  }, [records, selectedPortals, selectedQualities, selectedSizes, selectedColours]);
+  }, [records, selectedPortals, selectedProducts, selectedQualities, selectedSizes, selectedColours]);
 
   const clearAllFilters = () => {
     setSelectedPortals([]);
+    setSelectedProducts([]);
     setSelectedQualities([]);
     setSelectedSizes([]);
     setSelectedColours([]);
@@ -492,6 +492,25 @@ export default function App() {
     showToast('🧹 Live breach notifications cleared.');
   }, [showToast]);
 
+  // Load initial dataset (tries to sync default Google Sheet first, falls back to demo data if offline/error)
+  useEffect(() => {
+    const defaultSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaZ6A9O82NanD3WNLDnSOb2FIpNVPFnef3RN_DoeudGep31MAL6CQE5sUlbIDe-U7nxVBX0z2TVThw/pub?gid=1397264212&single=true&output=csv';
+    
+    const initData = async () => {
+      // First generate demo data so the app isn't blank while loading
+      const initialRecords = generateDemoData();
+      setRecords(initialRecords);
+      
+      try {
+        await fetchGoogleSheetData(defaultSheetUrl);
+      } catch (err) {
+        console.warn('Initial Google Sheet sync failed, using local fallback demo data', err);
+      }
+    };
+    
+    initData();
+  }, [fetchGoogleSheetData]);
+
   return (
     <div id="app-root-container" className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-20 selection:bg-blue-500/20 selection:text-slate-900">
       
@@ -636,7 +655,7 @@ export default function App() {
                   {isFiltersExpanded ? 'Hide Filter Controls' : 'Show Filter Controls'}
                 </button>
                 
-                {(selectedPortals.length > 0 || selectedQualities.length > 0 || selectedSizes.length > 0 || selectedColours.length > 0) && (
+                {(selectedPortals.length > 0 || selectedProducts.length > 0 || selectedQualities.length > 0 || selectedSizes.length > 0 || selectedColours.length > 0) && (
                   <button
                     id="btn-clear-filters-global"
                     onClick={clearAllFilters}
@@ -650,119 +669,57 @@ export default function App() {
 
             {/* Filter Content */}
             {isFiltersExpanded && (
-              <div className="p-6 border-b border-slate-200/80 bg-slate-50/20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-6 border-b border-slate-200/80 bg-slate-50/20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 relative z-30">
                 
-                {/* 1. Portal selection */}
-                <div className="space-y-2.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block font-mono">Marketplace Portal</span>
-                  <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    {filterOptions.portals.map(p => {
-                      const isSelected = selectedPortals.includes(p);
-                      return (
-                        <label key={p} className="flex items-center gap-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-                              setSelectedPortals(prev =>
-                                isSelected ? prev.filter(x => x !== p) : [...prev, p]
-                              );
-                            }}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 h-4 w-4"
-                          />
-                          <span className={isSelected ? 'font-bold text-slate-800' : ''}>{p}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* 1. Simplified Product Name selection */}
+                <SearchableDropdown
+                  id="simplified"
+                  label="Simplified"
+                  options={filterOptions.products}
+                  selectedValues={selectedProducts}
+                  onChange={setSelectedProducts}
+                  placeholder="All Products"
+                />
 
-                {/* 2. Product Quality selection */}
-                <div className="space-y-2.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block font-mono">Product Quality</span>
-                  <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    {filterOptions.qualities.length > 0 ? (
-                      filterOptions.qualities.map(q => {
-                        const isSelected = selectedQualities.includes(q);
-                        return (
-                          <label key={q} className="flex items-center gap-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {
-                                setSelectedQualities(prev =>
-                                  isSelected ? prev.filter(x => x !== q) : [...prev, q]
-                                );
-                              }}
-                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 h-4 w-4"
-                            />
-                            <span className={isSelected ? 'font-bold text-slate-800' : ''}>{q}</span>
-                          </label>
-                        );
-                      })
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">No quality column loaded</span>
-                    )}
-                  </div>
-                </div>
+                {/* 2. Portal selection */}
+                <SearchableDropdown
+                  id="portal"
+                  label="Portal"
+                  options={filterOptions.portals}
+                  selectedValues={selectedPortals}
+                  onChange={setSelectedPortals}
+                  placeholder="All Portals"
+                />
 
-                {/* 3. Size selection */}
-                <div className="space-y-2.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block font-mono">Product Size</span>
-                  <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    {filterOptions.sizes.length > 0 ? (
-                      filterOptions.sizes.map(s => {
-                        const isSelected = selectedSizes.includes(s);
-                        return (
-                          <label key={s} className="flex items-center gap-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {
-                                setSelectedSizes(prev =>
-                                  isSelected ? prev.filter(x => x !== s) : [...prev, s]
-                                );
-                              }}
-                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 h-4 w-4"
-                            />
-                            <span className={isSelected ? 'font-bold text-slate-800' : ''}>{s}</span>
-                          </label>
-                        );
-                      })
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">No size column loaded</span>
-                    )}
-                  </div>
-                </div>
+                {/* 3. Product Quality selection */}
+                <SearchableDropdown
+                  id="quality"
+                  label="Product Quality"
+                  options={filterOptions.qualities}
+                  selectedValues={selectedQualities}
+                  onChange={setSelectedQualities}
+                  placeholder="All Qualities"
+                />
 
-                {/* 4. Colour selection */}
-                <div className="space-y-2.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block font-mono">Product Colour</span>
-                  <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    {filterOptions.colours.length > 0 ? (
-                      filterOptions.colours.map(c => {
-                        const isSelected = selectedColours.includes(c);
-                        return (
-                          <label key={c} className="flex items-center gap-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {
-                                setSelectedColours(prev =>
-                                  isSelected ? prev.filter(x => x !== c) : [...prev, c]
-                                );
-                              }}
-                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 h-4 w-4"
-                            />
-                            <span className={isSelected ? 'font-bold text-slate-800' : ''}>{c}</span>
-                          </label>
-                        );
-                      })
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">No colour column loaded</span>
-                    )}
-                  </div>
-                </div>
+                {/* 4. Size selection */}
+                <SearchableDropdown
+                  id="size"
+                  label="Size"
+                  options={filterOptions.sizes}
+                  selectedValues={selectedSizes}
+                  onChange={setSelectedSizes}
+                  placeholder="All Sizes"
+                />
+
+                {/* 5. Colour selection */}
+                <SearchableDropdown
+                  id="colour"
+                  label="Colour"
+                  options={filterOptions.colours}
+                  selectedValues={selectedColours}
+                  onChange={setSelectedColours}
+                  placeholder="All Colours"
+                />
 
               </div>
             )}
