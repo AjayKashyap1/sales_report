@@ -83,7 +83,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       if (dateIdx === -1) dateIdx = idx;
     } else if (header.includes('portal') || header.includes('channel') || header.includes('platform') || header.includes('website') || header.includes('source') || header.includes('source_name')) {
       if (portalIdx === -1) portalIdx = idx;
-    } else if (header.includes('product') || header.includes('item') || header.includes('sku') || header.includes('name') || header.includes('title')) {
+    } else if (header.includes('product') || header.includes('item') || header.includes('sku') || header.includes('name') || header.includes('title') || header.includes('simplified') || header.includes('simpiled') || header.includes('column c') || header.includes('column_c') || header === 'c') {
       if (productIdx === -1) productIdx = idx;
     } else if (header.includes('amount') || header.includes('revenue') || header.includes('sales') || header.includes('price') || header.includes('total') || header.includes('value') || header.includes('inr') || header.includes('rupee')) {
       if (amountIdx === -1) amountIdx = idx;

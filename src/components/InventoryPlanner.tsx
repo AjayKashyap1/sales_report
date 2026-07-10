@@ -233,7 +233,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         let inventoryIdx = -1;
 
         // Try to match product name column
-        productIdx = header.findIndex(h => h.includes('product') || h.includes('item') || h.includes('name'));
+        productIdx = header.findIndex(h => h.includes('product') || h.includes('item') || h.includes('name') || h.includes('simplified') || h.includes('simpiled') || h.includes('column c') || h.includes('column_c') || h === 'c' || h.includes('sku'));
         
         // Try to match stock/inventory column
         inventoryIdx = header.findIndex(h => h.includes('stock') || h.includes('inventory') || h.includes('qty') || h.includes('quantity') || h.includes('pcs') || h.includes('current'));
@@ -660,10 +660,10 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               <p className="font-bold text-slate-800">Inventory CSV Upload Guide:</p>
               <p className="mt-1">
                 Upload your CSV file containing current stock quantity (Stock/Current Inventory) of your products.
-                The system will automatically map <strong>Product Name</strong> and <strong>Quantity/Stock</strong> columns.
+                The system will automatically map <strong>Product Name / Column C (Simpiled)</strong> and <strong>Quantity/Stock</strong> columns.
               </p>
               <div className="mt-2 text-[10px] text-slate-500 font-mono">
-                Valid Column Names: <span className="font-bold text-slate-700">Product Name, Item, Stock, Inventory, Qty, Quantity</span>
+                Valid Column Names: <span className="font-bold text-slate-700">Product Name, Column C, Simpiled, Simplified, Item, Stock, Inventory, Qty, Quantity</span>
               </div>
             </div>
           </div>
@@ -752,7 +752,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
                 onClick={() => requestSort('productName')}
               >
                 <div className="flex items-center gap-1.5">
-                  Product Description
+                  Column C (Simpiled)
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>

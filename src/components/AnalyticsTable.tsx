@@ -219,7 +219,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Product Model
+              Column C (Simpiled)
             </button>
           </div>
         </div>
@@ -258,7 +258,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('name')}
               >
                 <div className="flex items-center gap-1.5">
-                  {activeTab === 'PORTAL' ? 'Marketplace Portal' : 'Product Model'}
+                  {activeTab === 'PORTAL' ? 'Marketplace Portal' : 'Column C (Simpiled)'}
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
