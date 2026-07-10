@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SalesRecord, RollingAverageRow } from '../types';
-import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info } from 'lucide-react';
+import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info, ShoppingBag, Landmark } from 'lucide-react';
 
 interface AnalyticsTableProps {
   records: SalesRecord[];
@@ -11,8 +11,22 @@ type GroupSegment = 'PORTAL' | 'PRODUCT';
 export default function AnalyticsTable({ records }: AnalyticsTableProps) {
   const [activeTab, setActiveTab] = useState<GroupSegment>('PORTAL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<keyof RollingAverageRow>('totalSales');
+  const [metricMode, setMetricMode] = useState<'UNITS' | 'REVENUE'>('UNITS');
+  
+  const [sortField, setSortField] = useState<keyof RollingAverageRow>('avg3Month');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  // Check if dataset has revenue
+  const hasRevenue = useMemo(() => {
+    return records.some(r => r.amount > 0);
+  }, [records]);
+
+  // Keep in UNITS mode if there is no revenue
+  useEffect(() => {
+    if (!hasRevenue) {
+      setMetricMode('UNITS');
+    }
+  }, [hasRevenue]);
 
   // Compute rolling averages based on latest record date
   const rollingAverages = useMemo(() => {
@@ -59,15 +73,17 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
       groupings[groupKey].totalSales += r.amount;
       groupings[groupKey].totalUnits += r.units;
 
-      // Add to corresponding buckets
+      // Add to corresponding buckets based on active metricMode
+      const valueToAdd = metricMode === 'UNITS' ? r.units : r.amount;
+
       if (recDate >= boundary3M) {
-        groupings[groupKey].sum3M += r.amount;
+        groupings[groupKey].sum3M += valueToAdd;
       }
       if (recDate >= boundary6M) {
-        groupings[groupKey].sum6M += r.amount;
+        groupings[groupKey].sum6M += valueToAdd;
       }
       if (recDate >= boundary12M) {
-        groupings[groupKey].sum12M += r.amount;
+        groupings[groupKey].sum12M += valueToAdd;
       }
     });
 
@@ -75,14 +91,14 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
     return Object.values(groupings).map(g => ({
       name: g.name,
       type: activeTab,
-      avg3Month: Math.round(g.sum3M / 3),
-      avg6Month: Math.round(g.sum6M / 6),
-      avg12Month: Math.round(g.sum12M / 12),
+      avg3Month: Math.round(g.sum3M / 3 * 10) / 10,
+      avg6Month: Math.round(g.sum6M / 6 * 10) / 10,
+      avg12Month: Math.round(g.sum12M / 12 * 10) / 10,
       totalSales: g.totalSales,
       totalUnits: g.totalUnits
     }));
 
-  }, [records, activeTab]);
+  }, [records, activeTab, metricMode]);
 
   // Filtering & Sorting
   const processedData = useMemo(() => {
@@ -119,6 +135,18 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
     }
   };
 
+  const formatNumber = (val: number) => {
+    if (metricMode === 'UNITS') {
+      return `${val.toLocaleString('en-IN')} units`;
+    }
+    
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(val);
+  };
+
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -130,39 +158,70 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
   return (
     <div id="analytics-table-section" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 space-y-5 shadow-sm">
       {/* Table Header Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
             <BarChart3 size={18} className="text-blue-600" />
-            Rolling Averages (3M, 6M, 12M Averages)
+            Rolling Run Rates ({metricMode === 'UNITS' ? 'Unit-Based' : 'Revenue-Based'} 3M, 6M, 12M Averages)
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">Calculated based on the latest transaction dates in dataset</p>
+          <p className="text-xs text-slate-500 mt-0.5">Standardized monthly sales performance over rolling month blocks</p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200/50 self-start md:self-center">
-          <button
-            id="btn-tab-portal"
-            onClick={() => { setActiveTab('PORTAL'); setSearchQuery(''); }}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'PORTAL'
-                ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Portal Wise
-          </button>
-          <button
-            id="btn-tab-product"
-            onClick={() => { setActiveTab('PRODUCT'); setSearchQuery(''); }}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'PRODUCT'
-                ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Product Wise
-          </button>
+        {/* Filters and Metric Controls */}
+        <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
+          {/* Metric Mode Toggle */}
+          {hasRevenue && (
+            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-250">
+              <button
+                id="btn-table-metric-units"
+                onClick={() => setMetricMode('UNITS')}
+                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  metricMode === 'UNITS'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Units
+              </button>
+              <button
+                id="btn-table-metric-revenue"
+                onClick={() => setMetricMode('REVENUE')}
+                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  metricMode === 'REVENUE'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Revenue
+              </button>
+            </div>
+          )}
+
+          {/* Group Tab Switcher */}
+          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <button
+              id="btn-tab-portal"
+              onClick={() => { setActiveTab('PORTAL'); setSearchQuery(''); }}
+              className={`px-3.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                activeTab === 'PORTAL'
+                  ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Marketplace Portal
+            </button>
+            <button
+              id="btn-tab-product"
+              onClick={() => { setActiveTab('PRODUCT'); setSearchQuery(''); }}
+              className={`px-3.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                activeTab === 'PRODUCT'
+                  ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Product Model
+            </button>
+          </div>
         </div>
       </div>
 
@@ -170,7 +229,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
       <div className="p-3.5 bg-blue-50/50 border border-blue-100 rounded-lg flex gap-2.5 items-start text-xs text-slate-600">
         <Info size={14} className="text-blue-600 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold text-slate-800">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total sales inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
+          <span className="font-bold text-slate-800">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total <strong>{metricMode === 'UNITS' ? 'units sold' : 'sales revenue'}</strong> inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
         </div>
       </div>
 
@@ -208,7 +267,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg3Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  3-Month Avg
+                  3-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -217,7 +276,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg6Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  6-Month Avg
+                  6-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -226,7 +285,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg12Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  12-Month Avg
+                  12-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -235,7 +294,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('totalSales')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  Total Sales (All Time)
+                  Total Sales Value
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -244,7 +303,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('totalUnits')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  Units Sold
+                  Total Units Sold
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -258,19 +317,19 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                     {row.name}
                   </td>
                   <td className="p-3 text-xs font-bold text-right font-mono text-blue-600">
-                    {formatCurrency(row.avg3Month)}
+                    {formatNumber(row.avg3Month)}
                   </td>
                   <td className="p-3 text-xs font-bold text-right font-mono text-emerald-700">
-                    {formatCurrency(row.avg6Month)}
+                    {formatNumber(row.avg6Month)}
                   </td>
                   <td className="p-3 text-xs font-bold text-right font-mono text-amber-700">
-                    {formatCurrency(row.avg12Month)}
+                    {formatNumber(row.avg12Month)}
                   </td>
                   <td className="p-3 text-xs font-semibold text-slate-700 text-right font-mono">
                     {formatCurrency(row.totalSales)}
                   </td>
                   <td className="p-3 text-xs text-slate-500 text-right font-mono">
-                    {row.totalUnits.toLocaleString('en-IN')}
+                    {row.totalUnits.toLocaleString('en-IN')} units
                   </td>
                 </tr>
               ))

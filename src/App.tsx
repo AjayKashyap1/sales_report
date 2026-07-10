@@ -6,6 +6,7 @@ import RoleSelector from './components/RoleSelector';
 import CSVImport from './components/CSVImport';
 import SalesCharts from './components/SalesCharts';
 import AnalyticsTable from './components/AnalyticsTable';
+import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
 import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers } from 'lucide-react';
@@ -356,6 +357,11 @@ export default function App() {
         {/* ROLLING ROLLING AVERAGES TABLE (3M, 6M, 12M) */}
         {records.length > 0 && (
           <AnalyticsTable records={records} />
+        )}
+
+        {/* INVENTORY PLANNERS & 6-MONTH STOCK REQUISITIONS (UNITS ONLY) */}
+        {records.length > 0 && (
+          <InventoryPlanner records={records} />
         )}
 
         {/* SYSTEM THRESHOLDS GUARD & ALERT FEED */}

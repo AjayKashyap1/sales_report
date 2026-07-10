@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { SalesRecord } from '../types';
 import {
   ResponsiveContainer,
@@ -15,15 +15,28 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { TrendingUp, ShoppingBag, Landmark, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, ShoppingBag, Landmark, ArrowUpRight, CheckCircle, Info } from 'lucide-react';
 
 interface SalesChartsProps {
   records: SalesRecord[];
 }
 
-const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4'];
+const COLORS = ['#10b981', '#2563eb', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4'];
 
 export default function SalesCharts({ records }: SalesChartsProps) {
+  // Default metricMode to 'UNITS' as requested by the user: "mujhe sari calculation units mai chahiye"
+  const [metricMode, setMetricMode] = useState<'UNITS' | 'REVENUE'>('UNITS');
+
+  // Automatically fall back and keep in UNITS if there is no revenue (amount is all 0)
+  const hasRevenue = useMemo(() => {
+    return records.some(r => r.amount > 0);
+  }, [records]);
+
+  useEffect(() => {
+    if (!hasRevenue) {
+      setMetricMode('UNITS');
+    }
+  }, [hasRevenue]);
   
   // 1. Group by Month for Trend
   const monthlyTrendData = useMemo(() => {
@@ -64,8 +77,10 @@ export default function SalesCharts({ records }: SalesChartsProps) {
       portalGrouped[portal].units += r.units;
     });
 
-    return Object.values(portalGrouped).sort((a, b) => b.revenue - a.revenue);
-  }, [records]);
+    return Object.values(portalGrouped).sort((a, b) => {
+      return metricMode === 'UNITS' ? b.units - a.units : b.revenue - a.revenue;
+    });
+  }, [records, metricMode]);
 
   // 3. Group by Product
   const productData = useMemo(() => {
@@ -80,8 +95,10 @@ export default function SalesCharts({ records }: SalesChartsProps) {
       productGrouped[product].units += r.units;
     });
 
-    return Object.values(productGrouped).sort((a, b) => b.revenue - a.revenue).slice(0, 8); // Top 8 products
-  }, [records]);
+    return Object.values(productGrouped).sort((a, b) => {
+      return metricMode === 'UNITS' ? b.units - a.units : b.revenue - a.revenue;
+    }).slice(0, 8); // Top 8 products
+  }, [records, metricMode]);
 
   // Helper to format currency
   const formatCurrency = (val: number) => {
@@ -95,33 +112,71 @@ export default function SalesCharts({ records }: SalesChartsProps) {
     return `₹${val}`;
   };
 
+  // Format units nicely
+  const formatUnits = (val: number) => {
+    if (val >= 100000) {
+      return `${(val / 1000).toFixed(1)}k units`;
+    }
+    return `${val.toLocaleString('en-IN')} units`;
+  };
+
   const totalRevenue = useMemo(() => records.reduce((sum, r) => sum + r.amount, 0), [records]);
   const totalUnits = useMemo(() => records.reduce((sum, r) => sum + r.units, 0), [records]);
   const avgOrderValue = useMemo(() => (records.length > 0 ? totalRevenue / records.length : 0), [records, totalRevenue]);
 
   return (
     <div id="sales-charts-container" className="space-y-6">
-      {/* KPI Cards */}
-      <div id="kpi-cards-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
-          <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Revenue</span>
-            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{formatCurrency(totalRevenue)}</h4>
-            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
-              <ArrowUpRight size={12} /> Live sales aggregated
-            </span>
-          </div>
-          <div className="h-12 w-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-            <TrendingUp size={22} />
-          </div>
+      
+      {/* METRIC MODE SELECTOR */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 border border-slate-200 rounded-lg shadow-xs">
+        <div className="flex items-center gap-2">
+          <Info size={16} className="text-emerald-600 shrink-0" />
+          <p className="text-xs text-slate-600 font-medium">
+            {hasRevenue 
+              ? 'इस डेटासेट में यूनिट्स और सेल्स अमाउंट दोनों हैं। अपनी मुख्य गणना चुनें:' 
+              : 'इस शीट में सेल्स अमाउंट नहीं मिला, इसलिए गणना केवल यूनिट्स में की जा रही है।'}
+          </p>
         </div>
 
+        {hasRevenue && (
+          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 self-end sm:self-center">
+            <button
+              id="btn-metric-units"
+              onClick={() => setMetricMode('UNITS')}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                metricMode === 'UNITS'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              <ShoppingBag size={12} />
+              Units Sold (यूनिट्स बिक्री)
+            </button>
+            <button
+              id="btn-metric-revenue"
+              onClick={() => setMetricMode('REVENUE')}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                metricMode === 'REVENUE'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              <Landmark size={12} />
+              Revenue / Price (बिक्री राशि)
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* KPI Cards */}
+      <div id="kpi-cards-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        
         <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Units Sold</span>
-            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Units Sold</span>
+            <h4 className="text-2xl font-bold font-mono text-emerald-600 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
             <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
-              Across all products & channels
+              {metricMode === 'UNITS' ? '🌟 Active primary metric' : 'Total quantity sold'}
             </span>
           </div>
           <div className="h-12 w-12 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
@@ -131,10 +186,25 @@ export default function SalesCharts({ records }: SalesChartsProps) {
 
         <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Sale Ticket</span>
-            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{formatCurrency(avgOrderValue)}</h4>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Revenue Value</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">
+              {hasRevenue ? formatCurrency(totalRevenue) : '₹0'}
+            </h4>
             <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
-              Average order value (AOV)
+              {hasRevenue ? 'Aggregated invoice totals' : '⚠️ No revenue column in CSV'}
+            </span>
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+            <TrendingUp size={22} />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Transaction Rows</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{records.length.toLocaleString('en-IN')}</h4>
+            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+              Logged transaction points
             </span>
           </div>
           <div className="h-12 w-12 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
@@ -146,19 +216,21 @@ export default function SalesCharts({ records }: SalesChartsProps) {
       {/* Charts Grid */}
       <div id="charts-main-grid" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Trend Area Chart (2/3 width on large screens) */}
+        {/* Trend Area Chart */}
         <div id="trend-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-2 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Monthly Sales Revenue Trend</h3>
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+              Monthly {metricMode === 'UNITS' ? 'Units Sold' : 'Sales Revenue'} Trend
+            </h3>
             <p className="text-xs text-slate-500 mt-0.5">Timeline overview showing monthly performance fluctuations</p>
           </div>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                  <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={metricMode === 'UNITS' ? '#10b981' : '#2563eb'} stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor={metricMode === 'UNITS' ? '#10b981' : '#2563eb'} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -174,33 +246,38 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
-                  tickFormatter={formatCurrency} 
+                  tickFormatter={metricMode === 'UNITS' ? (val) => val.toLocaleString('en-IN') : formatCurrency} 
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
                   labelStyle={{ color: '#1e293b', fontWeight: 'bold', fontFamily: 'monospace' }}
-                  itemStyle={{ color: '#2563eb', fontSize: '12px' }}
-                  formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue']}
+                  itemStyle={{ color: metricMode === 'UNITS' ? '#10b981' : '#2563eb', fontSize: '12px' }}
+                  formatter={(value: any) => [
+                    metricMode === 'UNITS' ? `${Number(value).toLocaleString('en-IN')} units` : `₹${Number(value).toLocaleString('en-IN')}`,
+                    metricMode === 'UNITS' ? 'Units Sold' : 'Revenue'
+                  ]}
                 />
                 <Area 
                   type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#2563eb" 
+                  dataKey={metricMode === 'UNITS' ? 'units' : 'revenue'} 
+                  stroke={metricMode === 'UNITS' ? '#10b981' : '#2563eb'} 
                   strokeWidth={2.5} 
                   fillOpacity={1} 
-                  fill="url(#colorRevenue)" 
+                  fill="url(#colorTrend)" 
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Portal breakdown (1/3 width) */}
+        {/* Portal breakdown */}
         <div id="portal-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="mb-4">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Portal Share Distribution</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Sales distribution by online marketplace portals</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Marketplace portal contribution based on {metricMode === 'UNITS' ? 'quantity' : 'sales value'}
+              </p>
             </div>
             <div className="h-[200px] flex items-center justify-center relative">
               <ResponsiveContainer width="100%" height="100%">
@@ -212,7 +289,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                     innerRadius={60}
                     outerRadius={80}
                     paddingAngle={4}
-                    dataKey="revenue"
+                    dataKey={metricMode === 'UNITS' ? 'units' : 'revenue'}
                   >
                     {portalData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -221,12 +298,14 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                   <Tooltip
                     contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
                     itemStyle={{ fontSize: '11px', color: '#1e293b' }}
-                    formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Sales']}
+                    formatter={(value: any) => [
+                      metricMode === 'UNITS' ? `${Number(value).toLocaleString('en-IN')} units` : `₹${Number(value).toLocaleString('en-IN')}`,
+                      metricMode === 'UNITS' ? 'Quantity' : 'Sales'
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>
               
-              {/* Legend label in center */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
                 <span className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Active channels</span>
                 <span className="text-sm font-bold text-slate-800 mt-0.5">{portalData.length} Portals</span>
@@ -234,27 +313,34 @@ export default function SalesCharts({ records }: SalesChartsProps) {
             </div>
           </div>
 
-          {/* Styled Legend indicators */}
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {portalData.slice(0, 4).map((entry, index) => (
-              <div key={entry.name} className="flex items-center gap-1.5 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                <div className="overflow-hidden">
-                  <p className="text-[10px] font-bold text-slate-700 truncate">{entry.name}</p>
-                  <p className="text-[9px] font-mono text-slate-400 truncate mt-0.5">
-                    {((entry.revenue / totalRevenue) * 100).toFixed(0)}% ({formatCurrency(entry.revenue)})
-                  </p>
+            {portalData.slice(0, 4).map((entry, index) => {
+              const totalVal = metricMode === 'UNITS' ? totalUnits : totalRevenue;
+              const entryVal = metricMode === 'UNITS' ? entry.units : entry.revenue;
+              const percentage = totalVal > 0 ? ((entryVal / totalVal) * 100).toFixed(0) : '0';
+              
+              return (
+                <div key={entry.name} className="flex items-center gap-1.5 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                  <div className="overflow-hidden">
+                    <p className="text-[10px] font-bold text-slate-700 truncate">{entry.name}</p>
+                    <p className="text-[9px] font-mono text-slate-400 truncate mt-0.5">
+                      {percentage}% ({metricMode === 'UNITS' ? entry.units.toLocaleString('en-IN') : formatCurrency(entry.revenue)})
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Product Sales Bar Chart (Full Width) */}
+        {/* Product Sales Bar Chart */}
         <div id="product-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-3 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Product Performance (Top Products)</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Performance tracking of key products sorted by sales revenue</p>
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+              Product Performance ({metricMode === 'UNITS' ? 'Units Sold' : 'Revenue'} Comparison)
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">Top-performing products ordered by active metric</p>
           </div>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -273,22 +359,22 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
-                  tickFormatter={formatCurrency} 
+                  tickFormatter={metricMode === 'UNITS' ? (val) => val.toLocaleString('en-IN') : formatCurrency} 
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
                   itemStyle={{ fontSize: '11px' }}
                   formatter={(value: any, name: any) => {
                     if (name === 'revenue') return [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue (₹)'];
-                    return [value, 'Units Sold'];
+                    return [`${value.toLocaleString('en-IN')} units`, 'Units Sold'];
                   }}
                 />
                 <Legend 
                   wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: '#64748b' }}
                   formatter={(value) => value === 'revenue' ? 'Revenue (₹)' : 'Units Sold'}
                 />
-                <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                {metricMode === 'REVENUE' && <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24} />}
+                <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -298,3 +384,4 @@ export default function SalesCharts({ records }: SalesChartsProps) {
     </div>
   );
 }
+
