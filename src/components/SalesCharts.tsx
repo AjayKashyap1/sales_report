@@ -24,19 +24,11 @@ interface SalesChartsProps {
 const COLORS = ['#10b981', '#2563eb', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4'];
 
 export default function SalesCharts({ records }: SalesChartsProps) {
-  // Default metricMode to 'UNITS' as requested by the user: "mujhe sari calculation units mai chahiye"
-  const [metricMode, setMetricMode] = useState<'UNITS' | 'REVENUE'>('UNITS');
-
-  // Automatically fall back and keep in UNITS if there is no revenue (amount is all 0)
-  const hasRevenue = useMemo(() => {
-    return records.some(r => r.amount > 0);
+  const metricMode = 'UNITS';
+  
+  const totalUnits = useMemo(() => {
+    return records.reduce((sum, r) => sum + r.units, 0);
   }, [records]);
-
-  useEffect(() => {
-    if (!hasRevenue) {
-      setMetricMode('UNITS');
-    }
-  }, [hasRevenue]);
   
   // 1. Group by Month for Trend
   const monthlyTrendData = useMemo(() => {
@@ -120,54 +112,14 @@ export default function SalesCharts({ records }: SalesChartsProps) {
     return `${val.toLocaleString('en-IN')} units`;
   };
 
-  const totalRevenue = useMemo(() => records.reduce((sum, r) => sum + r.amount, 0), [records]);
-  const totalUnits = useMemo(() => records.reduce((sum, r) => sum + r.units, 0), [records]);
-  const avgOrderValue = useMemo(() => (records.length > 0 ? totalRevenue / records.length : 0), [records, totalRevenue]);
+  const avgMonthlyUnits = useMemo(() => {
+    if (monthlyTrendData.length === 0) return 0;
+    return Math.round(totalUnits / monthlyTrendData.length);
+  }, [totalUnits, monthlyTrendData]);
 
   return (
     <div id="sales-charts-container" className="space-y-6">
       
-      {/* METRIC MODE SELECTOR */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 border border-slate-200 rounded-lg shadow-xs">
-        <div className="flex items-center gap-2">
-          <Info size={16} className="text-emerald-600 shrink-0" />
-          <p className="text-xs text-slate-600 font-medium">
-            {hasRevenue 
-              ? 'This dataset contains both units and sales amount. Select your primary calculation metric:' 
-              : 'No sales revenue column was detected in this sheet, so calculations are processed in Units sold only.'}
-          </p>
-        </div>
-
-        {hasRevenue && (
-          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 self-end sm:self-center">
-            <button
-              id="btn-metric-units"
-              onClick={() => setMetricMode('UNITS')}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                metricMode === 'UNITS'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              <ShoppingBag size={12} />
-              Units Sold
-            </button>
-            <button
-              id="btn-metric-revenue"
-              onClick={() => setMetricMode('REVENUE')}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                metricMode === 'REVENUE'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              <Landmark size={12} />
-              Revenue / Price
-            </button>
-          </div>
-        )}
-      </div>
-
       {/* KPI Cards */}
       <div id="kpi-cards-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
@@ -176,7 +128,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
             <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Units Sold</span>
             <h4 className="text-2xl font-bold font-mono text-emerald-600 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
             <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
-              {metricMode === 'UNITS' ? '🌟 Active primary metric' : 'Total quantity sold'}
+              Primary calculation metric
             </span>
           </div>
           <div className="h-12 w-12 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
@@ -186,12 +138,12 @@ export default function SalesCharts({ records }: SalesChartsProps) {
 
         <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Revenue Value</span>
-            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">
-              {hasRevenue ? formatCurrency(totalRevenue) : '₹0'}
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Monthly Units</span>
+            <h4 className="text-2xl font-bold font-mono text-blue-600 mt-1">
+              {avgMonthlyUnits.toLocaleString('en-IN')}
             </h4>
             <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
-              {hasRevenue ? 'Aggregated invoice totals' : '⚠️ No revenue column in CSV'}
+              Run rate over active months
             </span>
           </div>
           <div className="h-12 w-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
@@ -220,7 +172,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
         <div id="trend-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-2 shadow-sm">
           <div className="mb-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
-              Monthly {metricMode === 'UNITS' ? 'Units Sold' : 'Sales Revenue'} Trend
+              Monthly Units Sold Trend
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">Timeline overview showing monthly performance fluctuations</p>
           </div>
@@ -276,7 +228,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
             <div className="mb-4">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Portal Share Distribution</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Marketplace portal contribution based on {metricMode === 'UNITS' ? 'quantity' : 'sales value'}
+                Marketplace portal contribution based on quantity
               </p>
             </div>
             <div className="h-[200px] flex items-center justify-center relative">
@@ -289,7 +241,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                     innerRadius={60}
                     outerRadius={80}
                     paddingAngle={4}
-                    dataKey={metricMode === 'UNITS' ? 'units' : 'revenue'}
+                    dataKey="units"
                   >
                     {portalData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -299,8 +251,8 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                     contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
                     itemStyle={{ fontSize: '11px', color: '#1e293b' }}
                     formatter={(value: any) => [
-                      metricMode === 'UNITS' ? `${Number(value).toLocaleString('en-IN')} units` : `₹${Number(value).toLocaleString('en-IN')}`,
-                      metricMode === 'UNITS' ? 'Quantity' : 'Sales'
+                      `${Number(value).toLocaleString('en-IN')} units`,
+                      'Quantity'
                     ]}
                   />
                 </PieChart>
@@ -315,8 +267,8 @@ export default function SalesCharts({ records }: SalesChartsProps) {
 
           <div className="grid grid-cols-2 gap-2 mt-2">
             {portalData.slice(0, 4).map((entry, index) => {
-              const totalVal = metricMode === 'UNITS' ? totalUnits : totalRevenue;
-              const entryVal = metricMode === 'UNITS' ? entry.units : entry.revenue;
+              const totalVal = totalUnits;
+              const entryVal = entry.units;
               const percentage = totalVal > 0 ? ((entryVal / totalVal) * 100).toFixed(0) : '0';
               
               return (
@@ -325,7 +277,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                   <div className="overflow-hidden">
                     <p className="text-[10px] font-bold text-slate-700 truncate">{entry.name}</p>
                     <p className="text-[9px] font-mono text-slate-400 truncate mt-0.5">
-                      {percentage}% ({metricMode === 'UNITS' ? entry.units.toLocaleString('en-IN') : formatCurrency(entry.revenue)})
+                      {percentage}% ({entry.units.toLocaleString('en-IN')} units)
                     </p>
                   </div>
                 </div>
@@ -338,9 +290,9 @@ export default function SalesCharts({ records }: SalesChartsProps) {
         <div id="product-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-3 shadow-sm">
           <div className="mb-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
-              Product Performance ({metricMode === 'UNITS' ? 'Units Sold' : 'Revenue'} Comparison)
+              Product Performance (Units Sold Comparison)
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Top-performing products ordered by active metric</p>
+            <p className="text-xs text-slate-500 mt-0.5">Top-performing products ordered by units sold</p>
           </div>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -359,21 +311,17 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
-                  tickFormatter={metricMode === 'UNITS' ? (val) => val.toLocaleString('en-IN') : formatCurrency} 
+                  tickFormatter={(val) => val.toLocaleString('en-IN')} 
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
                   itemStyle={{ fontSize: '11px' }}
-                  formatter={(value: any, name: any) => {
-                    if (name === 'revenue') return [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue (₹)'];
-                    return [`${value.toLocaleString('en-IN')} units`, 'Units Sold'];
-                  }}
+                  formatter={(value: any) => [`${value.toLocaleString('en-IN')} units`, 'Units Sold']}
                 />
                 <Legend 
                   wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: '#64748b' }}
-                  formatter={(value) => value === 'revenue' ? 'Revenue (₹)' : 'Units Sold'}
+                  formatter={() => 'Units Sold'}
                 />
-                {metricMode === 'REVENUE' && <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24} />}
                 <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>

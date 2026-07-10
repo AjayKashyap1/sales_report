@@ -26,7 +26,7 @@ export default function AlertManager({
   const [showConfig, setShowConfig] = useState(false);
   const [targetType, setTargetType] = useState<'TOTAL' | 'PORTAL' | 'PRODUCT'>('TOTAL');
   const [targetName, setTargetName] = useState('All Portals');
-  const [metric, setMetric] = useState<'REVENUE' | 'UNITS'>('REVENUE');
+  const [metric, setMetric] = useState<'REVENUE' | 'UNITS'>('UNITS');
   const [condition, setCondition] = useState<'LESS_THAN' | 'GREATER_THAN'>('LESS_THAN');
   const [valueInput, setValueInput] = useState('');
   
@@ -240,20 +240,7 @@ export default function AlertManager({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Metric</label>
-                  <select
-                    id="select-threshold-metric"
-                    value={metric}
-                    onChange={(e) => setMetric(e.target.value as any)}
-                    className="w-full bg-white border border-slate-200 rounded-lg text-xs text-slate-700 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  >
-                    <option value="REVENUE">Revenue (₹)</option>
-                    <option value="UNITS">Units (Qty)</option>
-                  </select>
-                </div>
-
+              <div className="grid grid-cols-1 gap-2">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Condition</label>
                   <select
@@ -270,12 +257,12 @@ export default function AlertManager({
 
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                  Threshold Value ({metric === 'REVENUE' ? '₹ Amount' : 'Units Qty'})
+                  Threshold Value (Units Qty)
                 </label>
                 <input
                   id="input-threshold-value"
                   type="number"
-                  placeholder={metric === 'REVENUE' ? 'e.g. 50000' : 'e.g. 10'}
+                  placeholder="e.g. 10"
                   value={valueInput}
                   onChange={(e) => setValueInput(e.target.value)}
                   className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"

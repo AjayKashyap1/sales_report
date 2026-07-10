@@ -7,6 +7,9 @@ export interface SalesRecord {
   product: string;    // product name
   amount: number;     // revenue amount
   units: number;      // quantity sold
+  quality?: string;   // Premium, Standard, Economy, etc.
+  size?: string;      // S, M, L, XL, XXL, etc.
+  colour?: string;    // Black, White, Red, Blue, etc.
 }
 
 export interface RollingAverageRow {

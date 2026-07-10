@@ -52,6 +52,43 @@ export function parseFlexibleDate(dateStr: string): Date {
   return new Date(); // Return current date as fallback instead of throwing
 }
 
+function extractFromProductName(productName: string): { quality: string; size: string; colour: string } {
+  const lower = productName.toLowerCase();
+  
+  // Quality detection
+  let quality = 'Standard';
+  if (lower.includes('premium') || lower.includes('best') || lower.includes('pro') || lower.includes('high quality')) quality = 'Premium';
+  else if (lower.includes('economy') || lower.includes('low') || lower.includes('cheap')) quality = 'Economy';
+  else if (lower.includes('deluxe') || lower.includes('luxury') || lower.includes('ultra')) quality = 'Deluxe';
+  else if (lower.includes('standard') || lower.includes('regular') || lower.includes('normal')) quality = 'Standard';
+  else if (lower.includes('classic') || lower.includes('vintage')) quality = 'Classic';
+
+  // Size detection
+  let size = 'M';
+  if (lower.includes('large') || lower.includes('big') || lower.includes(' l ') || lower.endsWith(' l') || lower.includes('xl')) {
+    if (lower.includes('xxl') || lower.includes('xx-large')) size = 'XXL';
+    else if (lower.includes('xl') || lower.includes('x-large')) size = 'XL';
+    else size = 'L';
+  } else if (lower.includes('small') || lower.includes('tiny') || lower.includes(' s ') || lower.endsWith(' s')) {
+    if (lower.includes('xs') || lower.includes('x-small')) size = 'XS';
+    else size = 'S';
+  } else if (lower.includes('medium') || lower.includes(' m ') || lower.endsWith(' m')) {
+    size = 'M';
+  }
+
+  // Colour detection
+  let colour = 'Default';
+  const colors = ['black', 'white', 'blue', 'red', 'green', 'yellow', 'gold', 'silver', 'grey', 'gray', 'pink', 'purple', 'orange', 'brown'];
+  for (const c of colors) {
+    if (lower.includes(c)) {
+      colour = c.charAt(0).toUpperCase() + c.slice(1);
+      break;
+    }
+  }
+
+  return { quality, size, colour };
+}
+
 export function parseCSVText(csvText: string): { records: SalesRecord[]; warning: string | null } {
   const records: SalesRecord[] = [];
   let warning: string | null = null;
@@ -77,6 +114,9 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
   let productIdx = -1;
   let amountIdx = -1;
   let unitsIdx = -1;
+  let qualityIdx = -1;
+  let sizeIdx = -1;
+  let colourIdx = -1;
 
   headers.forEach((header, idx) => {
     if (header.includes('date') || header.includes('order') || header.includes('tarikh') || header.includes('time') || header.includes('din')) {
@@ -89,6 +129,12 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       if (amountIdx === -1) amountIdx = idx;
     } else if (header.includes('unit') || header.includes('qty') || header.includes('quantity') || header.includes('count') || header.includes('pieces') || header.includes('pcs')) {
       if (unitsIdx === -1) unitsIdx = idx;
+    } else if (header.includes('quality') || header.includes('grade') || header.includes('level') || header.includes('type')) {
+      if (qualityIdx === -1) qualityIdx = idx;
+    } else if (header.includes('size') || header.includes('dimension') || header.includes('length')) {
+      if (sizeIdx === -1) sizeIdx = idx;
+    } else if (header.includes('colour') || header.includes('color') || header.includes('shade') || header.includes('tint')) {
+      if (colourIdx === -1) colourIdx = idx;
     }
   });
 
@@ -139,13 +185,37 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       const cleanUnitsStr = unitsRaw.replace(/[^0-9]/g, '');
       const units = parseInt(cleanUnitsStr, 10) || 1;
 
+      // Quality, Size, Colour parsing or extraction
+      let quality = '';
+      let size = '';
+      let colour = '';
+
+      if (qualityIdx !== -1 && cells[qualityIdx]) {
+        quality = cells[qualityIdx].trim();
+      }
+      if (sizeIdx !== -1 && cells[sizeIdx]) {
+        size = cells[sizeIdx].trim();
+      }
+      if (colourIdx !== -1 && cells[colourIdx]) {
+        colour = cells[colourIdx].trim();
+      }
+
+      // If any is missing, extract from product description
+      const extracted = extractFromProductName(product);
+      if (!quality) quality = extracted.quality;
+      if (!size) size = extracted.size;
+      if (!colour) colour = extracted.colour;
+
       records.push({
         id: `csv_row_${i}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         date,
         portal,
         product,
         amount,
-        units
+        units,
+        quality,
+        size,
+        colour
       });
     } catch (err) {
       console.warn(`Error parsing CSV row ${i}:`, err);
@@ -157,13 +227,16 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
 
 // Convert a set of records back to a simple CSV downloadable string (for mail/export simulation)
 export function exportToCSVString(records: SalesRecord[]): string {
-  const header = 'Date,Portal,Product,Amount (₹),Units\n';
+  const header = 'Date,Portal,Product Name,Quality,Size,Colour,Units Sold\n';
   const rows = records.map(r => {
     const formattedDate = r.date.toLocaleDateString('en-IN');
     // Escape quotes in portal and product
     const escapedPortal = r.portal.includes(',') ? `"${r.portal.replace(/"/g, '""')}"` : r.portal;
     const escapedProduct = r.product.includes(',') ? `"${r.product.replace(/"/g, '""')}"` : r.product;
-    return `${formattedDate},${escapedPortal},${escapedProduct},${r.amount},${r.units}`;
+    const quality = r.quality || 'Standard';
+    const size = r.size || 'M';
+    const colour = r.colour || 'Default';
+    return `${formattedDate},${escapedPortal},${escapedProduct},${quality},${size},${colour},${r.units}`;
   }).join('\n');
   return header + rows;
 }

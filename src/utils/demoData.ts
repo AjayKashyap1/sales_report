@@ -5,11 +5,11 @@ export function generateDemoData(): SalesRecord[] {
   const records: SalesRecord[] = [];
   const portals = ['Amazon India', 'Flipkart', 'Meesho', 'MyWebsite'];
   const products = [
-    { name: 'Wireless Pro Earbuds', price: 2499 },
-    { name: 'Fitband Pulse Smartwatch', price: 3999 },
-    { name: 'Premium Leather Wallet', price: 1299 },
-    { name: 'Ergonomic Office Chair', price: 8499 },
-    { name: 'Stainless Steel HydraBottle', price: 899 }
+    { name: 'Wireless Pro Earbuds', price: 2499, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'White'] },
+    { name: 'Fitband Pulse Smartwatch', price: 3999, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'Blue', 'Grey'] },
+    { name: 'Premium Leather Wallet', price: 1299, qualities: ['Premium'], sizes: ['S', 'M'], colours: ['Brown', 'Black'] },
+    { name: 'Ergonomic Office Chair', price: 8499, qualities: ['Deluxe', 'Premium'], sizes: ['L', 'XL'], colours: ['Black', 'Grey'] },
+    { name: 'Stainless Steel HydraBottle', price: 899, qualities: ['Standard', 'Economy'], sizes: ['M', 'L'], colours: ['Silver', 'Blue', 'Red'] }
   ];
 
   // Let's go back 15 months from current date (July 2026)
@@ -63,13 +63,21 @@ export function generateDemoData(): SalesRecord[] {
       const discount = 1 - (Math.random() * 0.1);
       const amount = Math.round(productObj.price * units * discount);
 
+      // Select randomized filters
+      const quality = productObj.qualities[Math.floor(Math.random() * productObj.qualities.length)];
+      const size = productObj.sizes[Math.floor(Math.random() * productObj.sizes.length)];
+      const colour = productObj.colours[Math.floor(Math.random() * productObj.colours.length)];
+
       records.push({
         id: `sales_${year}_${month}_${recordId++}`,
         date,
         portal,
         product: productObj.name,
         amount,
-        units
+        units,
+        quality,
+        size,
+        colour
       });
     }
   }
@@ -83,9 +91,9 @@ export const initialThresholds: AlertThreshold[] = [
     id: 't-1',
     targetType: 'TOTAL',
     targetName: 'All Portals',
-    metric: 'REVENUE',
+    metric: 'UNITS',
     condition: 'LESS_THAN',
-    value: 120000,
+    value: 120,
     isActive: true,
     createdAt: new Date(2026, 5, 1).toISOString()
   },
@@ -93,9 +101,9 @@ export const initialThresholds: AlertThreshold[] = [
     id: 't-2',
     targetType: 'PORTAL',
     targetName: 'MyWebsite',
-    metric: 'REVENUE',
+    metric: 'UNITS',
     condition: 'LESS_THAN',
-    value: 30000,
+    value: 30,
     isActive: true,
     createdAt: new Date(2026, 5, 1).toISOString()
   },

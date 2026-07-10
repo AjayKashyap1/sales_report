@@ -11,22 +11,10 @@ type GroupSegment = 'PORTAL' | 'PRODUCT';
 export default function AnalyticsTable({ records }: AnalyticsTableProps) {
   const [activeTab, setActiveTab] = useState<GroupSegment>('PORTAL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [metricMode, setMetricMode] = useState<'UNITS' | 'REVENUE'>('UNITS');
+  const metricMode = 'UNITS';
   
   const [sortField, setSortField] = useState<keyof RollingAverageRow>('avg3Month');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  // Check if dataset has revenue
-  const hasRevenue = useMemo(() => {
-    return records.some(r => r.amount > 0);
-  }, [records]);
-
-  // Keep in UNITS mode if there is no revenue
-  useEffect(() => {
-    if (!hasRevenue) {
-      setMetricMode('UNITS');
-    }
-  }, [hasRevenue]);
 
   // Compute rolling averages based on latest record date
   const rollingAverages = useMemo(() => {
@@ -162,41 +150,13 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
         <div>
           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
             <BarChart3 size={18} className="text-blue-600" />
-            Rolling Run Rates ({metricMode === 'UNITS' ? 'Unit-Based' : 'Revenue-Based'} 3M, 6M, 12M Averages)
+            Rolling Run Rates (Unit-Based 3M, 6M, 12M Averages)
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">Standardized monthly sales performance over rolling month blocks</p>
         </div>
 
         {/* Filters and Metric Controls */}
         <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
-          {/* Metric Mode Toggle */}
-          {hasRevenue && (
-            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-250">
-              <button
-                id="btn-table-metric-units"
-                onClick={() => setMetricMode('UNITS')}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  metricMode === 'UNITS'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Units
-              </button>
-              <button
-                id="btn-table-metric-revenue"
-                onClick={() => setMetricMode('REVENUE')}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  metricMode === 'REVENUE'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Revenue
-              </button>
-            </div>
-          )}
-
           {/* Group Tab Switcher */}
           <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button
@@ -229,7 +189,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
       <div className="p-3.5 bg-blue-50/50 border border-blue-100 rounded-lg flex gap-2.5 items-start text-xs text-slate-600">
         <Info size={14} className="text-blue-600 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold text-slate-800">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total <strong>{metricMode === 'UNITS' ? 'units sold' : 'sales revenue'}</strong> inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
+          <span className="font-bold text-slate-800">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total <strong>units sold</strong> inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
         </div>
       </div>
 
@@ -267,7 +227,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg3Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  3-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
+                  3-Month Avg (Qty)
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -276,7 +236,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg6Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  6-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
+                  6-Month Avg (Qty)
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -285,16 +245,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 onClick={() => requestSort('avg12Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
-                  12-Month Avg ({metricMode === 'UNITS' ? 'Qty' : '₹'})
-                  <ArrowUpDown size={12} className="text-slate-400" />
-                </div>
-              </th>
-              <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 transition-colors"
-                onClick={() => requestSort('totalSales')}
-              >
-                <div className="flex items-center justify-end gap-1.5">
-                  Total Sales Value
+                  12-Month Avg (Qty)
                   <ArrowUpDown size={12} className="text-slate-400" />
                 </div>
               </th>
@@ -325,9 +276,6 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                   <td className="p-3 text-xs font-bold text-right font-mono text-amber-700">
                     {formatNumber(row.avg12Month)}
                   </td>
-                  <td className="p-3 text-xs font-semibold text-slate-700 text-right font-mono">
-                    {formatCurrency(row.totalSales)}
-                  </td>
                   <td className="p-3 text-xs text-slate-500 text-right font-mono">
                     {row.totalUnits.toLocaleString('en-IN')} units
                   </td>
@@ -335,7 +283,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-xs text-slate-400 font-medium">
+                <td colSpan={5} className="p-8 text-center text-xs text-slate-400 font-medium">
                   No matching entries found for "{searchQuery}"
                 </td>
               </tr>
