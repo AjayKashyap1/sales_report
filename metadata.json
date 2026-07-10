@@ -1,0 +1,6 @@
+{
+  "name": "Sales Dashboard",
+  "description": "A real-time sales dashboard supporting CSV uploads, Google Sheets live integration, automatic refresh, role-based access, 3/6/12 month rolling average analytics, trend charts, and customizable threshold email/in-app alert triggers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

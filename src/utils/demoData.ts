@@ -1,0 +1,112 @@
+import { SalesRecord, AlertThreshold } from '../types';
+
+// Helper to generate realistic random records for the last 15 months
+export function generateDemoData(): SalesRecord[] {
+  const records: SalesRecord[] = [];
+  const portals = ['Amazon India', 'Flipkart', 'Meesho', 'MyWebsite'];
+  const products = [
+    { name: 'Wireless Pro Earbuds', price: 2499 },
+    { name: 'Fitband Pulse Smartwatch', price: 3999 },
+    { name: 'Premium Leather Wallet', price: 1299 },
+    { name: 'Ergonomic Office Chair', price: 8499 },
+    { name: 'Stainless Steel HydraBottle', price: 899 }
+  ];
+
+  // Let's go back 15 months from current date (July 2026)
+  // Current time is July 2026, let's anchor the end date to July 10, 2026.
+  const currentDate = new Date(2026, 6, 10); // July is month index 6 (0-indexed)
+  
+  let recordId = 1;
+
+  for (let m = 15; m >= 0; m--) {
+    const targetMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - m, 1);
+    const year = targetMonthDate.getFullYear();
+    const month = targetMonthDate.getMonth();
+    
+    // Determine month seasonal multiplier (Diwali spike in October/November, New Year spike in Jan, Summer dip)
+    let seasonalMultiplier = 1.0;
+    if (month === 9 || month === 10) { // Oct (9), Nov (10) - Indian festive season
+      seasonalMultiplier = 1.6;
+    } else if (month === 11 || month === 0) { // Dec, Jan - Winter/New Year sale
+      seasonalMultiplier = 1.3;
+    } else if (month === 4 || month === 5) { // May, June - Summer slump
+      seasonalMultiplier = 0.85;
+    }
+
+    // Generate multiple sales events per month
+    const transactionCount = Math.floor(15 + Math.random() * 15); // 15-30 sales entries per month
+    
+    for (let i = 0; i < transactionCount; i++) {
+      const day = Math.floor(Math.random() * 28) + 1; // 1 to 28
+      const date = new Date(year, month, day);
+      
+      const portal = portals[Math.floor(Math.random() * portals.length)];
+      const productObj = products[Math.floor(Math.random() * products.length)];
+      
+      // Units sold in this batch
+      let units = Math.floor(Math.random() * 8) + 1; // 1 to 8 units
+      
+      // Portals have specific biases for realism
+      if (portal === 'Amazon India') {
+        units = Math.floor(units * 1.5 * seasonalMultiplier);
+      } else if (portal === 'Flipkart') {
+        units = Math.floor(units * 1.3 * seasonalMultiplier);
+      } else if (portal === 'Meesho') {
+        units = Math.floor(units * 1.2 * seasonalMultiplier);
+      } else { // MyWebsite
+        units = Math.floor(units * 0.8 * seasonalMultiplier);
+      }
+      
+      if (units < 1) units = 1;
+
+      // Add random minor discount/variation (up to 10% off)
+      const discount = 1 - (Math.random() * 0.1);
+      const amount = Math.round(productObj.price * units * discount);
+
+      records.push({
+        id: `sales_${year}_${month}_${recordId++}`,
+        date,
+        portal,
+        product: productObj.name,
+        amount,
+        units
+      });
+    }
+  }
+
+  // Sort by date descending
+  return records.sort((a, b) => b.date.getTime() - a.date.getTime());
+}
+
+export const initialThresholds: AlertThreshold[] = [
+  {
+    id: 't-1',
+    targetType: 'TOTAL',
+    targetName: 'All Portals',
+    metric: 'REVENUE',
+    condition: 'LESS_THAN',
+    value: 120000,
+    isActive: true,
+    createdAt: new Date(2026, 5, 1).toISOString()
+  },
+  {
+    id: 't-2',
+    targetType: 'PORTAL',
+    targetName: 'MyWebsite',
+    metric: 'REVENUE',
+    condition: 'LESS_THAN',
+    value: 30000,
+    isActive: true,
+    createdAt: new Date(2026, 5, 1).toISOString()
+  },
+  {
+    id: 't-3',
+    targetType: 'PORTAL',
+    targetName: 'Amazon India',
+    metric: 'UNITS',
+    condition: 'LESS_THAN',
+    value: 20,
+    isActive: false,
+    createdAt: new Date(2026, 5, 5).toISOString()
+  }
+];

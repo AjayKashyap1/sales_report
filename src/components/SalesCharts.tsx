@@ -1,0 +1,300 @@
+import React, { useMemo } from 'react';
+import { SalesRecord } from '../types';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
+import { TrendingUp, ShoppingBag, Landmark, ArrowUpRight } from 'lucide-react';
+
+interface SalesChartsProps {
+  records: SalesRecord[];
+}
+
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4'];
+
+export default function SalesCharts({ records }: SalesChartsProps) {
+  
+  // 1. Group by Month for Trend
+  const monthlyTrendData = useMemo(() => {
+    const monthsGrouped: Record<string, { monthKey: string; dateObj: Date; revenue: number; units: number }> = {};
+    
+    records.forEach(r => {
+      const year = r.date.getFullYear();
+      const month = r.date.getMonth();
+      const monthName = r.date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      if (!monthsGrouped[key]) {
+        monthsGrouped[key] = {
+          monthKey: monthName,
+          dateObj: new Date(year, month, 1),
+          revenue: 0,
+          units: 0
+        };
+      }
+      monthsGrouped[key].revenue += r.amount;
+      monthsGrouped[key].units += r.units;
+    });
+
+    // Sort chronologically
+    return Object.values(monthsGrouped).sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+  }, [records]);
+
+  // 2. Group by Portal
+  const portalData = useMemo(() => {
+    const portalGrouped: Record<string, { name: string; revenue: number; units: number }> = {};
+    
+    records.forEach(r => {
+      const portal = r.portal;
+      if (!portalGrouped[portal]) {
+        portalGrouped[portal] = { name: portal, revenue: 0, units: 0 };
+      }
+      portalGrouped[portal].revenue += r.amount;
+      portalGrouped[portal].units += r.units;
+    });
+
+    return Object.values(portalGrouped).sort((a, b) => b.revenue - a.revenue);
+  }, [records]);
+
+  // 3. Group by Product
+  const productData = useMemo(() => {
+    const productGrouped: Record<string, { name: string; revenue: number; units: number }> = {};
+    
+    records.forEach(r => {
+      const product = r.product;
+      if (!productGrouped[product]) {
+        productGrouped[product] = { name: product, revenue: 0, units: 0 };
+      }
+      productGrouped[product].revenue += r.amount;
+      productGrouped[product].units += r.units;
+    });
+
+    return Object.values(productGrouped).sort((a, b) => b.revenue - a.revenue).slice(0, 8); // Top 8 products
+  }, [records]);
+
+  // Helper to format currency
+  const formatCurrency = (val: number) => {
+    if (val >= 10000000) {
+      return `₹${(val / 10000000).toFixed(2)} Cr`;
+    } else if (val >= 100000) {
+      return `₹${(val / 100000).toFixed(1)} L`;
+    } else if (val >= 1000) {
+      return `₹${(val / 1000).toFixed(0)}k`;
+    }
+    return `₹${val}`;
+  };
+
+  const totalRevenue = useMemo(() => records.reduce((sum, r) => sum + r.amount, 0), [records]);
+  const totalUnits = useMemo(() => records.reduce((sum, r) => sum + r.units, 0), [records]);
+  const avgOrderValue = useMemo(() => (records.length > 0 ? totalRevenue / records.length : 0), [records, totalRevenue]);
+
+  return (
+    <div id="sales-charts-container" className="space-y-6">
+      {/* KPI Cards */}
+      <div id="kpi-cards-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Revenue</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{formatCurrency(totalRevenue)}</h4>
+            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+              <ArrowUpRight size={12} /> Live sales aggregated
+            </span>
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+            <TrendingUp size={22} />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Units Sold</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
+            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+              Across all products & channels
+            </span>
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+            <ShoppingBag size={22} />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Sale Ticket</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{formatCurrency(avgOrderValue)}</h4>
+            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+              Average order value (AOV)
+            </span>
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+            <Landmark size={22} />
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Grid */}
+      <div id="charts-main-grid" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Trend Area Chart (2/3 width on large screens) */}
+        <div id="trend-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-2 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Monthly Sales Revenue Trend</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Timeline overview showing monthly performance fluctuations</p>
+          </div>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis 
+                  dataKey="monthKey" 
+                  stroke="#64748b" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <YAxis 
+                  stroke="#64748b" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={formatCurrency} 
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                  labelStyle={{ color: '#1e293b', fontWeight: 'bold', fontFamily: 'monospace' }}
+                  itemStyle={{ color: '#2563eb', fontSize: '12px' }}
+                  formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#2563eb" 
+                  strokeWidth={2.5} 
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Portal breakdown (1/3 width) */}
+        <div id="portal-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Portal Share Distribution</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Sales distribution by online marketplace portals</p>
+            </div>
+            <div className="h-[200px] flex items-center justify-center relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={portalData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={4}
+                    dataKey="revenue"
+                  >
+                    {portalData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
+                    itemStyle={{ fontSize: '11px', color: '#1e293b' }}
+                    formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Sales']}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              
+              {/* Legend label in center */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+                <span className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Active channels</span>
+                <span className="text-sm font-bold text-slate-800 mt-0.5">{portalData.length} Portals</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Styled Legend indicators */}
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {portalData.slice(0, 4).map((entry, index) => (
+              <div key={entry.name} className="flex items-center gap-1.5 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
+                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                <div className="overflow-hidden">
+                  <p className="text-[10px] font-bold text-slate-700 truncate">{entry.name}</p>
+                  <p className="text-[9px] font-mono text-slate-400 truncate mt-0.5">
+                    {((entry.revenue / totalRevenue) * 100).toFixed(0)}% ({formatCurrency(entry.revenue)})
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Sales Bar Chart (Full Width) */}
+        <div id="product-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-3 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Product Performance (Top Products)</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Performance tracking of key products sorted by sales revenue</p>
+          </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={productData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#64748b" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={(name) => name.length > 15 ? `${name.substring(0, 15)}...` : name}
+                />
+                <YAxis 
+                  stroke="#64748b" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={formatCurrency} 
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
+                  itemStyle={{ fontSize: '11px' }}
+                  formatter={(value: any, name: any) => {
+                    if (name === 'revenue') return [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue (₹)'];
+                    return [value, 'Units Sold'];
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: '#64748b' }}
+                  formatter={(value) => value === 'revenue' ? 'Revenue (₹)' : 'Units Sold'}
+                />
+                <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
