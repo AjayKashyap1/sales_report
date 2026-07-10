@@ -5,11 +5,11 @@ export function generateDemoData(): SalesRecord[] {
   const records: SalesRecord[] = [];
   const portals = ['Amazon India', 'Flipkart', 'Meesho', 'MyWebsite'];
   const products = [
-    { name: 'Wireless Pro Earbuds', price: 2499, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'White'] },
-    { name: 'Fitband Pulse Smartwatch', price: 3999, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'Blue', 'Grey'] },
-    { name: 'Premium Leather Wallet', price: 1299, qualities: ['Premium'], sizes: ['S', 'M'], colours: ['Brown', 'Black'] },
-    { name: 'Ergonomic Office Chair', price: 8499, qualities: ['Deluxe', 'Premium'], sizes: ['L', 'XL'], colours: ['Black', 'Grey'] },
-    { name: 'Stainless Steel HydraBottle', price: 899, qualities: ['Standard', 'Economy'], sizes: ['M', 'L'], colours: ['Silver', 'Blue', 'Red'] }
+    { name: 'Wireless Pro Earbuds', price: 2499, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'White'], image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
+    { name: 'Fitband Pulse Smartwatch', price: 3999, qualities: ['Premium', 'Deluxe'], sizes: ['M', 'L'], colours: ['Black', 'Blue', 'Grey'], image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
+    { name: 'Premium Leather Wallet', price: 1299, qualities: ['Premium'], sizes: ['S', 'M'], colours: ['Brown', 'Black'], image: 'https://images.unsplash.com/photo-1627124765135-56c2f90a905a?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
+    { name: 'Ergonomic Office Chair', price: 8499, qualities: ['Deluxe', 'Premium'], sizes: ['L', 'XL'], colours: ['Black', 'Grey'], image: 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
+    { name: 'Stainless Steel HydraBottle', price: 899, qualities: ['Standard', 'Economy'], sizes: ['M', 'L'], colours: ['Silver', 'Blue', 'Red'], image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' }
   ];
 
   // Let's go back 15 months from current date (July 2026)
@@ -77,7 +77,8 @@ export function generateDemoData(): SalesRecord[] {
         units,
         quality,
         size,
-        colour
+        colour,
+        imageLink: productObj.image
       });
     }
   }

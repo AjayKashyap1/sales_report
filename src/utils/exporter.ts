@@ -16,15 +16,16 @@ export function downloadCSV(csvContent: string, filename: string) {
 
 // 1. Export records/transactions to CSV
 export function exportRecordsToCSV(records: any[], filename: string = 'sales_transactions.csv') {
-  const headers = ['Date', 'Marketplace Portal', 'Column C (Simpiled)', 'Quality', 'Size', 'Colour', 'Units Sold'];
+  const headers = ['Packed On', 'Simplified', 'sum Qty', 'Portal', 'Product Quality', 'Size', 'Colour', 'Image Link'];
   const rows = records.map(r => [
     r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date).split('T')[0],
-    r.portal,
     r.product,
+    r.units,
+    r.portal,
     r.quality || 'N/A',
     r.size || 'N/A',
     r.colour || 'N/A',
-    r.units
+    r.imageLink || ''
   ]);
   
   const csvContent = [headers.join(','), ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
@@ -42,15 +43,16 @@ export function exportRecordsToPDF(records: any[], filename: string = 'sales_tra
   doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
   doc.text(`Total Records: ${records.length}`, 14, 26);
   
-  const headers = [['Date', 'Portal', 'Column C (Simpiled)', 'Quality', 'Size', 'Colour', 'Units']];
+  const headers = [['Packed On', 'Simplified', 'sum Qty', 'Portal', 'Product Quality', 'Size', 'Colour', 'Image Link']];
   const body = records.map(r => [
     r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date).split('T')[0],
-    r.portal,
     r.product,
+    String(r.units),
+    r.portal,
     r.quality || 'N/A',
     r.size || 'N/A',
     r.colour || 'N/A',
-    String(r.units)
+    r.imageLink || ''
   ]);
   
   autoTable(doc, {

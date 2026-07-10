@@ -117,9 +117,10 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
   let qualityIdx = -1;
   let sizeIdx = -1;
   let colourIdx = -1;
+  let imageLinkIdx = -1;
 
   headers.forEach((header, idx) => {
-    if (header.includes('date') || header.includes('order') || header.includes('tarikh') || header.includes('time') || header.includes('din')) {
+    if (header.includes('date') || header.includes('order') || header.includes('tarikh') || header.includes('time') || header.includes('din') || header.includes('packed on')) {
       if (dateIdx === -1) dateIdx = idx;
     } else if (header.includes('portal') || header.includes('channel') || header.includes('platform') || header.includes('website') || header.includes('source') || header.includes('source_name')) {
       if (portalIdx === -1) portalIdx = idx;
@@ -127,7 +128,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       if (productIdx === -1) productIdx = idx;
     } else if (header.includes('amount') || header.includes('revenue') || header.includes('sales') || header.includes('price') || header.includes('total') || header.includes('value') || header.includes('inr') || header.includes('rupee')) {
       if (amountIdx === -1) amountIdx = idx;
-    } else if (header.includes('unit') || header.includes('qty') || header.includes('quantity') || header.includes('count') || header.includes('pieces') || header.includes('pcs')) {
+    } else if (header.includes('unit') || header.includes('qty') || header.includes('quantity') || header.includes('count') || header.includes('pieces') || header.includes('pcs') || header.includes('sum qty')) {
       if (unitsIdx === -1) unitsIdx = idx;
     } else if (header.includes('quality') || header.includes('grade') || header.includes('level') || header.includes('type')) {
       if (qualityIdx === -1) qualityIdx = idx;
@@ -135,6 +136,8 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       if (sizeIdx === -1) sizeIdx = idx;
     } else if (header.includes('colour') || header.includes('color') || header.includes('shade') || header.includes('tint')) {
       if (colourIdx === -1) colourIdx = idx;
+    } else if (header.includes('image link') || header.includes('imagelink') || header.includes('image') || header.includes('photo') || header.includes('pic') || header.includes('img') || header.includes('link')) {
+      if (imageLinkIdx === -1) imageLinkIdx = idx;
     }
   });
 
@@ -189,6 +192,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       let quality = '';
       let size = '';
       let colour = '';
+      let imageLink = '';
 
       if (qualityIdx !== -1 && cells[qualityIdx]) {
         quality = cells[qualityIdx].trim();
@@ -199,12 +203,33 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
       if (colourIdx !== -1 && cells[colourIdx]) {
         colour = cells[colourIdx].trim();
       }
+      if (imageLinkIdx !== -1 && cells[imageLinkIdx]) {
+        imageLink = cells[imageLinkIdx].trim();
+      }
 
       // If any is missing, extract from product description
       const extracted = extractFromProductName(product);
       if (!quality) quality = extracted.quality;
       if (!size) size = extracted.size;
       if (!colour) colour = extracted.colour;
+      
+      // Fallback for imageLink if not supplied in CSV
+      if (!imageLink) {
+        const lowerProd = product.toLowerCase();
+        if (lowerProd.includes('earbud') || lowerProd.includes('headphone') || lowerProd.includes('wireless pro')) {
+          imageLink = 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+        } else if (lowerProd.includes('watch') || lowerProd.includes('fitband')) {
+          imageLink = 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+        } else if (lowerProd.includes('wallet') || lowerProd.includes('leather')) {
+          imageLink = 'https://images.unsplash.com/photo-1627124765135-56c2f90a905a?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+        } else if (lowerProd.includes('chair') || lowerProd.includes('office')) {
+          imageLink = 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+        } else if (lowerProd.includes('bottle') || lowerProd.includes('hydra')) {
+          imageLink = 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+        } else {
+          imageLink = `https://picsum.photos/seed/${encodeURIComponent(product)}/150/150`;
+        }
+      }
 
       records.push({
         id: `csv_row_${i}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -215,7 +240,8 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
         units,
         quality,
         size,
-        colour
+        colour,
+        imageLink
       });
     } catch (err) {
       console.warn(`Error parsing CSV row ${i}:`, err);
@@ -227,7 +253,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
 
 // Convert a set of records back to a simple CSV downloadable string (for mail/export simulation)
 export function exportToCSVString(records: SalesRecord[]): string {
-  const header = 'Date,Portal,Product Name,Quality,Size,Colour,Units Sold\n';
+  const header = 'Packed On,Simplified,sum Qty,Portal,Product Quality,Size,Colour,Image Link\n';
   const rows = records.map(r => {
     const formattedDate = r.date.toLocaleDateString('en-IN');
     // Escape quotes in portal and product
@@ -236,7 +262,8 @@ export function exportToCSVString(records: SalesRecord[]): string {
     const quality = r.quality || 'Standard';
     const size = r.size || 'M';
     const colour = r.colour || 'Default';
-    return `${formattedDate},${escapedPortal},${escapedProduct},${quality},${size},${colour},${r.units}`;
+    const imageLink = r.imageLink || '';
+    return `${formattedDate},${escapedProduct},${r.units},${escapedPortal},${quality},${size},${colour},${imageLink}`;
   }).join('\n');
   return header + rows;
 }

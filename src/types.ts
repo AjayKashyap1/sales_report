@@ -10,6 +10,7 @@ export interface SalesRecord {
   quality?: string;   // Premium, Standard, Economy, etc.
   size?: string;      // S, M, L, XL, XXL, etc.
   colour?: string;    // Black, White, Red, Blue, etc.
+  imageLink?: string; // Image Link URL
 }
 
 export interface RollingAverageRow {

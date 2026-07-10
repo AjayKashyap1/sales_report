@@ -8,7 +8,8 @@ import AnalyticsTable from './components/AnalyticsTable';
 import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package } from 'lucide-react';
+import SalesReportTable from './components/SalesReportTable';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
@@ -16,7 +17,7 @@ export default function App() {
   const [thresholds, setThresholds] = useState<AlertThreshold[]>(initialThresholds);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'REPORT' | 'RUN_RATE' | 'STOCK_PLANNER'>('REPORT');
   
   // Advanced Multi-Select Filters States
   const [selectedPortals, setSelectedPortals] = useState<string[]>([]);
@@ -559,6 +560,19 @@ export default function App() {
         {/* TABS NAVIGATION BAR */}
         <div id="navigation-tabs-bar" className="flex flex-wrap border border-slate-200 bg-white p-1 rounded-xl shadow-xs gap-1 relative z-15">
           <button
+            id="tab-report"
+            onClick={() => setActiveTab('REPORT')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'REPORT'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            <FileSpreadsheet size={15} />
+            <span>Detailed Sales Report</span>
+          </button>
+
+          <button
             id="tab-dashboard"
             onClick={() => setActiveTab('DASHBOARD')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -822,6 +836,29 @@ export default function App() {
 
         {/* TAB CONTENTS */}
         
+        {/* 0. DETAILED SALES REPORT */}
+        {activeTab === 'REPORT' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* DATA CONNECTION CHANNELS (CSV & GOOGLE SHEET) */}
+            <CSVImport
+              currentRole={currentRole}
+              onDataLoaded={handleDataLoaded}
+              sheetConfig={sheetConfig}
+              onSheetConfigChange={setSheetConfig}
+              onFetchGoogleSheet={fetchGoogleSheetData}
+              totalLoaded={records.length}
+            />
+
+            {filteredRecords.length > 0 ? (
+              <SalesReportTable records={filteredRecords} />
+            ) : (
+              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+                No data matched selected filters. Adjust your filters or load data.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 1. SALES DASHBOARD & TRENDS */}
         {activeTab === 'DASHBOARD' && (
           <div className="space-y-8 animate-in fade-in duration-200">
