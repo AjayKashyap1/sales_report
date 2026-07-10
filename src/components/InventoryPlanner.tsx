@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { SalesRecord } from '../types';
 import { 
   Package, 
@@ -15,7 +15,8 @@ import {
   Minus,
   Search,
   CheckCircle2,
-  ListRestart
+  ListRestart,
+  Upload
 } from 'lucide-react';
 
 interface InventoryPlannerProps {
@@ -28,6 +29,13 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkSuccess, setBulkSuccess] = useState<string | null>(null);
+
+  // Separate Inventory CSV Upload State
+  const [isCsvUploadOpen, setIsCsvUploadOpen] = useState(false);
+  const [csvSuccess, setCsvSuccess] = useState<string | null>(null);
+  const [csvError, setCsvError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Sorting state
   const [sortField, setSortField] = useState<'productName' | 'avg3MonthUnits' | 'projected6MDemand' | 'currentStock' | 'shortfall' | 'status'>('shortfall');
@@ -131,6 +139,173 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
       };
     });
   }, [records, inventory]);
+
+  // Simple robust CSV parser for inventory columns
+  const parseCSV = (text: string): string[][] => {
+    const result: string[][] = [];
+    let row: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const nextChar = text[i + 1];
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"';
+          i++; // skip next quote
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        row.push(current.trim());
+        current = '';
+      } else if ((char === '\r' || char === '\n') && !inQuotes) {
+        if (char === '\r' && nextChar === '\n') {
+          i++;
+        }
+        row.push(current.trim());
+        result.push(row);
+        row = [];
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    if (current || row.length > 0) {
+      row.push(current.trim());
+      result.push(row);
+    }
+    return result;
+  };
+
+  // Drag and drop events for inventory CSV
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleInventoryCSVFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleInventoryCSVFile(e.target.files[0]);
+    }
+  };
+
+  const handleInventoryCSVFile = (file: File) => {
+    if (!file) return;
+    setCsvError(null);
+    setCsvSuccess(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        if (!text) {
+          setCsvError('फ़ाइल खाली है या पढ़ी नहीं जा सकी। (File is empty or unreadable)');
+          return;
+        }
+
+        const rows = parseCSV(text);
+        if (rows.length < 2) {
+          setCsvError('फ़ाइल में कम से कम एक हेडर और एक डेटा पंक्ति होनी चाहिए। (File must contain a header and at least one data row)');
+          return;
+        }
+
+        // Find headers
+        const header = rows[0].map(h => h.toLowerCase().trim());
+        
+        // Find indices
+        let productIdx = -1;
+        let inventoryIdx = -1;
+
+        // Try to match product name column
+        productIdx = header.findIndex(h => h.includes('product') || h.includes('item') || h.includes('name') || h.includes('विवरण') || h.includes('उत्पाद'));
+        
+        // Try to match stock/inventory column
+        inventoryIdx = header.findIndex(h => h.includes('stock') || h.includes('inventory') || h.includes('qty') || h.includes('quantity') || h.includes('pcs') || h.includes('मात्रा') || h.includes('यूनिट') || h.includes('current'));
+
+        // Fallbacks
+        if (productIdx === -1) productIdx = 0;
+        if (inventoryIdx === -1) {
+          inventoryIdx = header.findIndex(h => !isNaN(Number(h))); // find first number header
+          if (inventoryIdx === -1) {
+            inventoryIdx = 1; // absolute fallback
+          }
+        }
+
+        if (productIdx === inventoryIdx) {
+          if (productIdx === 0) inventoryIdx = 1;
+          else productIdx = 0;
+        }
+
+        const updatedInventory = { ...inventory };
+        let successCount = 0;
+        const knownProducts = productCalculations.map(p => p.productName);
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+
+          const rawName = row[productIdx];
+          const rawQty = row[inventoryIdx];
+
+          if (!rawName) continue;
+
+          // Remove quotes or extra symbols from number
+          const cleanedQtyStr = String(rawQty).replace(/[^0-9]/g, '');
+          const qty = parseInt(cleanedQtyStr, 10);
+          if (isNaN(qty) || qty < 0) continue;
+
+          const matchedName = rawName.trim();
+          
+          const exactMatch = knownProducts.find(
+            kp => kp.toLowerCase() === matchedName.toLowerCase()
+          );
+
+          const partialMatch = exactMatch || knownProducts.find(
+            kp => kp.toLowerCase().includes(matchedName.toLowerCase()) || matchedName.toLowerCase().includes(kp.toLowerCase())
+          );
+
+          if (partialMatch) {
+            updatedInventory[partialMatch] = qty;
+            successCount++;
+          } else {
+            updatedInventory[matchedName] = qty;
+            successCount++;
+          }
+        }
+
+        setInventory(updatedInventory);
+        if (successCount > 0) {
+          setCsvSuccess(`सफलतापूर्वक ${successCount} उत्पादों की इन्वेंटरी CSV से अपडेट कर दी गई है! 🎉`);
+          setTimeout(() => {
+            setIsCsvUploadOpen(false);
+            setCsvSuccess(null);
+          }, 3500);
+        } else {
+          setCsvError('कोई मान्य उत्पाद मिलान नहीं मिला। कृपया सुनिश्चित करें कि CSV में "Product Name" और "Stock" या "Current Inventory" कॉलम हैं।');
+        }
+      } catch (err) {
+        console.error(err);
+        setCsvError('CSV फ़ाइल को पार्स करने में त्रुटि हुई। (Error parsing CSV file)');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // Handle single inventory change
   const handleInventoryChange = (productName: string, value: number) => {
@@ -339,8 +514,26 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
 
         <div className="flex flex-wrap gap-2.5 shrink-0 self-start md:self-center">
           <button
+            id="btn-toggle-inventory-csv"
+            onClick={() => { 
+              setIsCsvUploadOpen(!isCsvUploadOpen); 
+              setIsBulkOpen(false); 
+              setCsvError(null); 
+              setCsvSuccess(null); 
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
+              isCsvUploadOpen 
+                ? 'bg-emerald-800 border-emerald-900 text-white shadow-sm font-black' 
+                : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 font-extrabold'
+            }`}
+          >
+            <Upload size={14} />
+            {isCsvUploadOpen ? 'Close CSV Uploader' : 'Upload Inventory CSV'}
+          </button>
+
+          <button
             id="btn-toggle-bulk-paste"
-            onClick={() => { setIsBulkOpen(!isBulkOpen); setBulkError(null); setBulkSuccess(null); }}
+            onClick={() => { setIsBulkOpen(!isBulkOpen); setIsCsvUploadOpen(false); setBulkError(null); setBulkSuccess(null); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
               isBulkOpen 
                 ? 'bg-slate-800 border-slate-900 text-white shadow-sm' 
@@ -453,6 +646,82 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SEPARATE CSV FILE UPLOADER FOR INVENTORY UPDATE */}
+      {isCsvUploadOpen && (
+        <div id="csv-inventory-uploader-box" className="p-5 bg-emerald-50/50 border border-emerald-200 rounded-lg space-y-4 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex items-start gap-2.5 text-xs text-slate-650 leading-relaxed bg-white p-3.5 rounded-lg border border-emerald-250">
+            <HelpCircle size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-slate-800">इन्वेंटरी CSV फ़ाइल अपलोड गाइड (Inventory CSV Upload Guide):</p>
+              <p className="mt-1">
+                अपनी CSV फ़ाइल अपलोड करें जिसमें आपके उत्पादों की वर्तमान स्टॉक मात्रा (Stock/Current Inventory) हो।
+                प्रणाली स्वचालित रूप से <strong>Product Name</strong> और <strong>Quantity/Stock</strong> कॉलम का मिलान करेगी।
+              </p>
+              <div className="mt-2 text-[10px] text-slate-500 font-mono">
+                मान्य कॉलम नाम: <span className="font-bold text-slate-700">Product Name, Item, Stock, Inventory, Qty, Quantity</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="inventory-csv-dropzone"
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+              dragActive
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-emerald-300 hover:border-emerald-500 bg-white hover:bg-emerald-50/30'
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+            <div className="flex flex-col items-center justify-center gap-2.5">
+              <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-xs">
+                <Upload size={22} className={dragActive ? 'animate-bounce' : ''} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-700 animate-pulse-subtle">
+                  {dragActive ? 'यहाँ फ़ाइल छोड़ें (Drop file here)' : 'इन्वेंटरी CSV फ़ाइल यहाँ खींचें और छोड़ें या ब्राउज़ करने के लिए क्लिक करें'}
+                </p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">Supports standard CSV files (.csv) only</p>
+              </div>
+            </div>
+          </div>
+
+          {csvError && (
+            <div className="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs font-medium rounded-lg flex items-center gap-2">
+              <AlertCircle size={14} className="shrink-0" />
+              <p>{csvError}</p>
+            </div>
+          )}
+
+          {csvSuccess && (
+            <div className="p-3 bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-lg flex items-center gap-2">
+              <CheckCircle2 size={14} className="shrink-0" />
+              <p>{csvSuccess}</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              id="btn-close-csv-box"
+              onClick={() => { setIsCsvUploadOpen(false); setCsvError(null); setCsvSuccess(null); }}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              Close CSV Uploader
             </button>
           </div>
         </div>

@@ -9,7 +9,7 @@ import AnalyticsTable from './components/AnalyticsTable';
 import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers } from 'lucide-react';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
@@ -17,6 +17,7 @@ export default function App() {
   const [thresholds, setThresholds] = useState<AlertThreshold[]>(initialThresholds);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER'>('DASHBOARD');
   
   const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>({
     url: '',
@@ -339,49 +340,130 @@ export default function App() {
           userEmail="ajay741900@gmail.com"
         />
 
-        {/* DATA CONNECTION CHANNELS (CSV & GOOGLE SHEET) */}
-        <CSVImport
-          currentRole={currentRole}
-          onDataLoaded={handleDataLoaded}
-          sheetConfig={sheetConfig}
-          onSheetConfigChange={setSheetConfig}
-          onFetchGoogleSheet={fetchGoogleSheetData}
-          totalLoaded={records.length}
-        />
+        {/* TABS NAVIGATION BAR */}
+        <div id="navigation-tabs-bar" className="flex flex-wrap border border-slate-200 bg-white p-1 rounded-xl shadow-xs gap-1 relative z-15">
+          <button
+            id="tab-dashboard"
+            onClick={() => setActiveTab('DASHBOARD')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'DASHBOARD'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            <TrendingUp size={15} />
+            <span>Sales Dashboard & Trends (बिक्री डैशबोर्ड)</span>
+          </button>
+          
+          <button
+            id="tab-run-rate"
+            onClick={() => setActiveTab('RUN_RATE')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'RUN_RATE'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            <BarChart3 size={15} />
+            <span>Rolling Run Rates (रोलिंग रन रेट)</span>
+          </button>
 
-        {/* RECHARTS DATA VISUALIZATION PANEL */}
-        {records.length > 0 && (
-          <SalesCharts records={records} />
+          <button
+            id="tab-stock-planner"
+            onClick={() => setActiveTab('STOCK_PLANNER')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'STOCK_PLANNER'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            <Package size={15} />
+            <span>6-Month Stock Planner (स्टॉक नियोजक)</span>
+          </button>
+        </div>
+
+        {/* TAB CONTENTS */}
+        
+        {/* 1. SALES DASHBOARD & TRENDS */}
+        {activeTab === 'DASHBOARD' && (
+          <div className="space-y-8 animate-in fade-in duration-200">
+            {/* DATA CONNECTION CHANNELS (CSV & GOOGLE SHEET) */}
+            <CSVImport
+              currentRole={currentRole}
+              onDataLoaded={handleDataLoaded}
+              sheetConfig={sheetConfig}
+              onSheetConfigChange={setSheetConfig}
+              onFetchGoogleSheet={fetchGoogleSheetData}
+              totalLoaded={records.length}
+            />
+
+            {/* RECHARTS DATA VISUALIZATION PANEL */}
+            {records.length > 0 ? (
+              <SalesCharts records={records} />
+            ) : (
+              <div className="p-8 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+                कृपया विश्लेषण के लिए पहले बिक्री डेटा लोड करें। (Please load sales data to view trend charts.)
+              </div>
+            )}
+
+            {/* SYSTEM THRESHOLDS GUARD & ALERT FEED */}
+            <AlertManager
+              currentRole={currentRole}
+              records={records}
+              thresholds={thresholds}
+              onAddThreshold={handleAddThreshold}
+              onToggleThreshold={handleToggleThreshold}
+              onDeleteThreshold={handleDeleteThreshold}
+              systemAlerts={systemAlerts}
+              onClearAlerts={handleClearAlerts}
+            />
+
+            {/* SECURE TELEMETRY EMAIL EXPORTER */}
+            {records.length > 0 && (
+              <EmailExporter 
+                currentRole={currentRole}
+                records={records}
+              />
+            )}
+          </div>
         )}
 
-        {/* ROLLING ROLLING AVERAGES TABLE (3M, 6M, 12M) */}
-        {records.length > 0 && (
-          <AnalyticsTable records={records} />
+        {/* 2. ROLLING RUN RATES */}
+        {activeTab === 'RUN_RATE' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="bg-white border border-slate-200 p-5 rounded-lg shadow-2xs">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Statistical Run Rates (सांख्यिकीय विश्लेषण)</span>
+              <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
+                <BarChart3 size={18} className="text-blue-600" />
+                Rolling Run Rate Performance (रोलिंग रन रेट प्रदर्शन)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                यह अनुभाग उत्पादों और बिक्री चैनलों की <strong>3-महीने (3M), 6-महीने (6M), और 12-महीने (12M)</strong> की अवधि में औसत बिक्री का विस्तृत विवरण प्रस्तुत करता है।
+                इससे आप रुझान (trends) और मांग के पैटर्न को समझ सकते हैं।
+              </p>
+            </div>
+            
+            {records.length > 0 ? (
+              <AnalyticsTable records={records} />
+            ) : (
+              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+                कृपया पहले बिक्री डैशबोर्ड टैब में डेटा लोड करें। (Please load sales data in the Sales Dashboard tab first.)
+              </div>
+            )}
+          </div>
         )}
 
-        {/* INVENTORY PLANNERS & 6-MONTH STOCK REQUISITIONS (UNITS ONLY) */}
-        {records.length > 0 && (
-          <InventoryPlanner records={records} />
-        )}
-
-        {/* SYSTEM THRESHOLDS GUARD & ALERT FEED */}
-        <AlertManager
-          currentRole={currentRole}
-          records={records}
-          thresholds={thresholds}
-          onAddThreshold={handleAddThreshold}
-          onToggleThreshold={handleToggleThreshold}
-          onDeleteThreshold={handleDeleteThreshold}
-          systemAlerts={systemAlerts}
-          onClearAlerts={handleClearAlerts}
-        />
-
-        {/* SECURE TELEMETRY EMAIL EXPORTER */}
-        {records.length > 0 && (
-          <EmailExporter 
-            currentRole={currentRole}
-            records={records}
-          />
+        {/* 3. 6-MONTH STOCK PLANNER */}
+        {activeTab === 'STOCK_PLANNER' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {records.length > 0 ? (
+              <InventoryPlanner records={records} />
+            ) : (
+              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+                कृपया पहले बिक्री डैशबोर्ड टैब में डेटा लोड करें। (Please load sales data in the Sales Dashboard tab first.)
+              </div>
+            )}
+          </div>
         )}
 
       </main>
