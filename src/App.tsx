@@ -26,17 +26,17 @@ export default function App() {
     errorMessage: null
   });
 
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 5000);
+  }, []);
+
   // Load initial beautiful mock dataset
   useEffect(() => {
     const initialRecords = generateDemoData();
     setRecords(initialRecords);
     showToast('🚀 System initialized with 15-month historical retail sales demo data.');
-  }, []);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 5000);
-  };
+  }, [showToast]);
 
   // Automated threshold breach scanner
   const scanThresholdsForBreaches = useCallback((currentRecords: SalesRecord[], currentThresholds: AlertThreshold[]) => {
@@ -107,7 +107,7 @@ export default function App() {
     if (newAlerts.length > 0) {
       showToast(`⚠️ ${newAlerts.length} threshold breach alerts triggered. Dispatching reports to ajay741900@gmail.com...`);
     }
-  }, []);
+  }, [showToast]);
 
   // Re-run scanning whenever data or thresholds change
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function App() {
   }, [records, thresholds, scanThresholdsForBreaches]);
 
   // Handle local CSV upload or Google Sheet parsed data
-  const handleDataLoaded = (newRecords: SalesRecord[], source: 'LOCAL_UPLOAD' | 'GOOGLE_SHEET', sheetUrl?: string) => {
+  const handleDataLoaded = useCallback((newRecords: SalesRecord[], source: 'LOCAL_UPLOAD' | 'GOOGLE_SHEET', sheetUrl?: string) => {
     setRecords(newRecords);
     
     if (source === 'LOCAL_UPLOAD') {
@@ -130,7 +130,7 @@ export default function App() {
         errorMessage: null
       }));
     }
-  };
+  }, [showToast]);
 
   // Helper to convert standard Google Sheet URL to direct CSV export format
   const convertToCSVUrl = (inputUrl: string): string => {
@@ -204,7 +204,7 @@ export default function App() {
   };
 
   // Fetch from Google Sheet CSV Web URL
-  const fetchGoogleSheetData = async (url: string) => {
+  const fetchGoogleSheetData = useCallback(async (url: string) => {
     if (!url) return;
     
     const formattedUrl = convertToCSVUrl(url);
@@ -239,32 +239,32 @@ export default function App() {
       }));
       showToast('❌ Google Sheet synchronization failed. Click help guide for details.');
     }
-  };
+  }, [handleDataLoaded, showToast]);
 
   // Threshold Actions
-  const handleAddThreshold = (newT: Omit<AlertThreshold, 'id' | 'createdAt'>) => {
+  const handleAddThreshold = useCallback((newT: Omit<AlertThreshold, 'id' | 'createdAt'>) => {
     const threshold: AlertThreshold = {
       ...newT,
       id: `t-${Date.now()}`,
       createdAt: new Date().toISOString()
     };
     setThresholds(prev => [...prev, threshold]);
-  };
+  }, []);
 
-  const handleToggleThreshold = (id: string) => {
+  const handleToggleThreshold = useCallback((id: string) => {
     setThresholds(prev => prev.map(t => t.id === id ? { ...t, isActive: !t.isActive } : t));
     showToast('⚙️ Threshold alert configuration updated.');
-  };
+  }, [showToast]);
 
-  const handleDeleteThreshold = (id: string) => {
+  const handleDeleteThreshold = useCallback((id: string) => {
     setThresholds(prev => prev.filter(t => t.id !== id));
     showToast('🗑️ Threshold rule deleted.');
-  };
+  }, [showToast]);
 
-  const handleClearAlerts = () => {
+  const handleClearAlerts = useCallback(() => {
     setSystemAlerts([]);
     showToast('🧹 Live breach notifications cleared.');
-  };
+  }, [showToast]);
 
   return (
     <div id="app-root-container" className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-20 selection:bg-blue-500/20 selection:text-slate-900">

@@ -37,27 +37,37 @@ export default function CSVImport({
 
   // Handle countdown animation when sheet auto-refresh is active
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    if (sheetConfig.isEnabled && sheetConfig.url && sheetConfig.status !== 'FETCHING') {
-      if (refreshCountdown === null) {
-        setRefreshCountdown(sheetConfig.refreshInterval);
-      } else if (refreshCountdown <= 1) {
-        // Trigger fetch
-        onFetchGoogleSheet(sheetConfig.url);
-        setRefreshCountdown(sheetConfig.refreshInterval);
-      } else {
-        intervalId = setInterval(() => {
-          setRefreshCountdown(prev => (prev !== null ? prev - 1 : null));
-        }, 1000);
-      }
-    } else {
+    if (!sheetConfig.isEnabled || !sheetConfig.url || sheetConfig.status === 'FETCHING') {
       setRefreshCountdown(null);
+      return;
     }
 
+    // Initialize countdown if null
+    setRefreshCountdown(prev => {
+      if (prev === null) return sheetConfig.refreshInterval;
+      return prev;
+    });
+
+    const intervalId = setInterval(() => {
+      setRefreshCountdown(prev => {
+        if (prev === null) {
+          return sheetConfig.refreshInterval;
+        }
+        if (prev <= 1) {
+          // Trigger fetch asynchronously outside of rendering/effect cycles
+          setTimeout(() => {
+            onFetchGoogleSheet(sheetConfig.url);
+          }, 0);
+          return sheetConfig.refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      clearInterval(intervalId);
     };
-  }, [sheetConfig.isEnabled, sheetConfig.url, sheetConfig.refreshInterval, sheetConfig.status, refreshCountdown, onFetchGoogleSheet]);
+  }, [sheetConfig.isEnabled, sheetConfig.url, sheetConfig.refreshInterval, sheetConfig.status, onFetchGoogleSheet]);
 
   // Handle CSV Local Upload
   const handleCSVFile = (file: File) => {
