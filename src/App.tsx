@@ -136,14 +136,66 @@ export default function App() {
   const convertToCSVUrl = (inputUrl: string): string => {
     let cleanUrl = inputUrl.trim();
     
-    // Check if already a direct CSV published URL
+    try {
+      const urlObj = new URL(cleanUrl);
+      
+      // Check if it's a google spreadsheet URL
+      if (urlObj.hostname.includes('docs.google.com') && urlObj.pathname.includes('/spreadsheets/')) {
+        
+        // 1. Published to web URL pattern: /spreadsheets/d/e/...
+        if (urlObj.pathname.includes('/spreadsheets/d/e/')) {
+          // If pathname has /pubhtml, change to /pub
+          if (urlObj.pathname.includes('/pubhtml')) {
+            urlObj.pathname = urlObj.pathname.replace('/pubhtml', '/pub');
+          }
+          
+          // Ensure output=csv is set
+          urlObj.searchParams.set('output', 'csv');
+          return urlObj.toString();
+        }
+        
+        // 2. Standard edit URL pattern: /spreadsheets/d/<ID>/edit
+        const match = urlObj.pathname.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+        if (match && match[1] && match[1] !== 'e') {
+          const sheetId = match[1];
+          const exportUrl = new URL(`https://docs.google.com/spreadsheets/d/${sheetId}/export`);
+          
+          // Copy existing search parameters
+          urlObj.searchParams.forEach((val, key) => {
+            exportUrl.searchParams.set(key, val);
+          });
+          
+          // Extract gid from hash if present (e.g. #gid=12345)
+          if (urlObj.hash) {
+            const hashMatch = urlObj.hash.match(/gid=([0-9]+)/);
+            if (hashMatch && hashMatch[1]) {
+              exportUrl.searchParams.set('gid', hashMatch[1]);
+            }
+          }
+          
+          exportUrl.searchParams.set('format', 'csv');
+          return exportUrl.toString();
+        }
+      }
+    } catch (e) {
+      // In case URL parsing fails, fall back to basic regex/string checks
+    }
+    
+    // --- FALLBACK REGEX METHOD ---
     if (cleanUrl.includes('output=csv') || cleanUrl.includes('format=csv')) {
       return cleanUrl;
     }
     
-    // Check for standard sheets URL pattern: https://docs.google.com/spreadsheets/d/<ID>/edit...
+    if (cleanUrl.includes('/spreadsheets/d/e/')) {
+      if (cleanUrl.includes('/pubhtml')) {
+        const withPub = cleanUrl.replace('/pubhtml', '/pub');
+        return withPub.includes('?') ? `${withPub}&output=csv` : `${withPub}?output=csv`;
+      }
+      return cleanUrl.includes('?') ? `${cleanUrl}&output=csv` : `${cleanUrl}?output=csv`;
+    }
+    
     const match = cleanUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    if (match && match[1]) {
+    if (match && match[1] && match[1] !== 'e') {
       const sheetId = match[1];
       return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
     }
