@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SalesRecord, UserRole, AlertThreshold, SystemAlert, GoogleSheetConfig } from './types';
 import { generateDemoData, initialThresholds } from './utils/demoData';
 import { parseCSVText } from './utils/csvParser';
-import RoleSelector from './components/RoleSelector';
 import CSVImport from './components/CSVImport';
 import SalesCharts from './components/SalesCharts';
 import AnalyticsTable from './components/AnalyticsTable';
@@ -333,13 +332,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* SECURITY ROLE DELEGATOR */}
-        <RoleSelector
-          currentRole={currentRole}
-          onRoleChange={setCurrentRole}
-          userEmail="ajay741900@gmail.com"
-        />
-
         {/* TABS NAVIGATION BAR */}
         <div id="navigation-tabs-bar" className="flex flex-wrap border border-slate-200 bg-white p-1 rounded-xl shadow-xs gap-1 relative z-15">
           <button
@@ -352,7 +344,7 @@ export default function App() {
             }`}
           >
             <TrendingUp size={15} />
-            <span>Sales Dashboard & Trends (बिक्री डैशबोर्ड)</span>
+            <span>Sales Dashboard & Trends</span>
           </button>
           
           <button
@@ -365,7 +357,7 @@ export default function App() {
             }`}
           >
             <BarChart3 size={15} />
-            <span>Rolling Run Rates (रोलिंग रन रेट)</span>
+            <span>Rolling Run Rates</span>
           </button>
 
           <button
@@ -378,7 +370,7 @@ export default function App() {
             }`}
           >
             <Package size={15} />
-            <span>6-Month Stock Planner (स्टॉक नियोजक)</span>
+            <span>6-Month Stock Planner</span>
           </button>
         </div>
 
@@ -402,7 +394,7 @@ export default function App() {
               <SalesCharts records={records} />
             ) : (
               <div className="p-8 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
-                कृपया विश्लेषण के लिए पहले बिक्री डेटा लोड करें। (Please load sales data to view trend charts.)
+                Please load sales data to view trend charts.
               </div>
             )}
 
@@ -432,14 +424,13 @@ export default function App() {
         {activeTab === 'RUN_RATE' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="bg-white border border-slate-200 p-5 rounded-lg shadow-2xs">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Statistical Run Rates (सांख्यिकीय विश्लेषण)</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Statistical Run Rates</span>
               <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
                 <BarChart3 size={18} className="text-blue-600" />
-                Rolling Run Rate Performance (रोलिंग रन रेट प्रदर्शन)
+                Rolling Run Rate Performance
               </h3>
               <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                यह अनुभाग उत्पादों और बिक्री चैनलों की <strong>3-महीने (3M), 6-महीने (6M), और 12-महीने (12M)</strong> की अवधि में औसत बिक्री का विस्तृत विवरण प्रस्तुत करता है।
-                इससे आप रुझान (trends) और मांग के पैटर्न को समझ सकते हैं।
+                This section presents a detailed breakdown of average sales for products and sales channels over periods of 3 months (3M), 6 months (6M), and 12 months (12M) to help you understand trends and demand patterns.
               </p>
             </div>
             
@@ -447,7 +438,7 @@ export default function App() {
               <AnalyticsTable records={records} />
             ) : (
               <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
-                कृपया पहले बिक्री डैशबोर्ड टैब में डेटा लोड करें। (Please load sales data in the Sales Dashboard tab first.)
+                Please load sales data in the Sales Dashboard tab first.
               </div>
             )}
           </div>
@@ -460,7 +451,7 @@ export default function App() {
               <InventoryPlanner records={records} />
             ) : (
               <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
-                कृपया पहले बिक्री डैशबोर्ड टैब में डेटा लोड करें। (Please load sales data in the Sales Dashboard tab first.)
+                Please load sales data in the Sales Dashboard tab first.
               </div>
             )}
           </div>

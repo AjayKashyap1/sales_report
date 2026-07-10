@@ -133,8 +133,8 @@ export default function SalesCharts({ records }: SalesChartsProps) {
           <Info size={16} className="text-emerald-600 shrink-0" />
           <p className="text-xs text-slate-600 font-medium">
             {hasRevenue 
-              ? 'इस डेटासेट में यूनिट्स और सेल्स अमाउंट दोनों हैं। अपनी मुख्य गणना चुनें:' 
-              : 'इस शीट में सेल्स अमाउंट नहीं मिला, इसलिए गणना केवल यूनिट्स में की जा रही है।'}
+              ? 'This dataset contains both units and sales amount. Select your primary calculation metric:' 
+              : 'No sales revenue column was detected in this sheet, so calculations are processed in Units sold only.'}
           </p>
         </div>
 
@@ -150,7 +150,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
               }`}
             >
               <ShoppingBag size={12} />
-              Units Sold (यूनिट्स बिक्री)
+              Units Sold
             </button>
             <button
               id="btn-metric-revenue"
@@ -162,7 +162,7 @@ export default function SalesCharts({ records }: SalesChartsProps) {
               }`}
             >
               <Landmark size={12} />
-              Revenue / Price (बिक्री राशि)
+              Revenue / Price
             </button>
           </div>
         )}

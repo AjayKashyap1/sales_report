@@ -215,13 +215,13 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
       try {
         const text = e.target?.result as string;
         if (!text) {
-          setCsvError('फ़ाइल खाली है या पढ़ी नहीं जा सकी। (File is empty or unreadable)');
+          setCsvError('File is empty or unreadable.');
           return;
         }
 
         const rows = parseCSV(text);
         if (rows.length < 2) {
-          setCsvError('फ़ाइल में कम से कम एक हेडर और एक डेटा पंक्ति होनी चाहिए। (File must contain a header and at least one data row)');
+          setCsvError('File must contain a header and at least one data row.');
           return;
         }
 
@@ -233,10 +233,10 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         let inventoryIdx = -1;
 
         // Try to match product name column
-        productIdx = header.findIndex(h => h.includes('product') || h.includes('item') || h.includes('name') || h.includes('विवरण') || h.includes('उत्पाद'));
+        productIdx = header.findIndex(h => h.includes('product') || h.includes('item') || h.includes('name'));
         
         // Try to match stock/inventory column
-        inventoryIdx = header.findIndex(h => h.includes('stock') || h.includes('inventory') || h.includes('qty') || h.includes('quantity') || h.includes('pcs') || h.includes('मात्रा') || h.includes('यूनिट') || h.includes('current'));
+        inventoryIdx = header.findIndex(h => h.includes('stock') || h.includes('inventory') || h.includes('qty') || h.includes('quantity') || h.includes('pcs') || h.includes('current'));
 
         // Fallbacks
         if (productIdx === -1) productIdx = 0;
@@ -291,17 +291,17 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
 
         setInventory(updatedInventory);
         if (successCount > 0) {
-          setCsvSuccess(`सफलतापूर्वक ${successCount} उत्पादों की इन्वेंटरी CSV से अपडेट कर दी गई है! 🎉`);
+          setCsvSuccess(`Successfully updated inventory for ${successCount} products from CSV! 🎉`);
           setTimeout(() => {
             setIsCsvUploadOpen(false);
             setCsvSuccess(null);
           }, 3500);
         } else {
-          setCsvError('कोई मान्य उत्पाद मिलान नहीं मिला। कृपया सुनिश्चित करें कि CSV में "Product Name" और "Stock" या "Current Inventory" कॉलम हैं।');
+          setCsvError('No valid product matches found. Please ensure your CSV contains "Product Name" and "Stock" or "Current Inventory" columns.');
         }
       } catch (err) {
         console.error(err);
-        setCsvError('CSV फ़ाइल को पार्स करने में त्रुटि हुई। (Error parsing CSV file)');
+        setCsvError('Error parsing CSV file.');
       }
     };
     reader.readAsText(file);
@@ -328,7 +328,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
     setBulkSuccess(null);
 
     if (!bulkInput.trim()) {
-      setBulkError('कृपया इनपुट बॉक्स में कुछ इन्वेंटरी डेटा डालें। (Please enter some inventory data)');
+      setBulkError('Please enter some inventory data.');
       return;
     }
 
@@ -408,14 +408,14 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
     setInventory(updatedInventory);
     
     if (successCount > 0) {
-      setBulkSuccess(`सफलतापूर्वक ${successCount} उत्पादों की इन्वेंटरी अपडेट कर दी गई है! 🎉`);
+      setBulkSuccess(`Successfully updated inventory for ${successCount} products! 🎉`);
       setBulkInput('');
       setTimeout(() => {
         setIsBulkOpen(false);
         setBulkSuccess(null);
       }, 2500);
     } else {
-      setBulkError('कोई मान्य उत्पाद मिलान नहीं मिला। कृपया प्रारूप की जांच करें (उदा: उत्पाद का नाम, मात्रा)');
+      setBulkError('No valid product matches found. Please verify the format (e.g. Product Name, Quantity).');
     }
   };
 
@@ -501,14 +501,14 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 font-mono">
-            Forecasting & Replenishment (पूर्वानुमान एवं पुनःपूर्ति)
+            Forecasting & Replenishment
           </span>
           <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
             <Package size={20} className="text-emerald-600" />
-            6-Month Stock Requirement Planner (यूनिट-आधारित स्टॉक आवश्यकता नियोजक)
+            6-Month Stock Requirement Planner
           </h3>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-            यह प्रणाली पिछले <strong>3 महीनों की औसत यूनिट बिक्री (Monthly Average Units sold)</strong> की गणना करती है और उसके आधार पर अगले <strong>6 महीनों के स्टॉक की आवश्यकता (6-Month Projected Demand)</strong> का अनुमान लगाती है। अपने पास की वर्तमान इन्वेंट्री दर्ज करें ताकि आवश्यक खरीद स्टॉक की जानकारी मिल सके।
+            This system calculates the <strong>Monthly Average Units sold over the past 3 months</strong> and projects the <strong>6-Month Projected Demand</strong>. Update current stock levels below to determine net requirements.
           </p>
         </div>
 
@@ -593,10 +593,10 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           <div className="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-md border border-slate-200">
             <HelpCircle size={16} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800">बल्क इन्वेंटरी अपलोड गाइड (Bulk Paste Guide):</p>
+              <p className="font-bold text-slate-800">Bulk Paste Guide:</p>
               <p className="mt-1">
-                आप सीधे एक्सेल या गूगल शीट से दो कॉलम (Product Name, Current Inventory) को कॉपी करके यहाँ पेस्ट कर सकते हैं।
-                प्रत्येक उत्पाद एक नई लाइन में होना चाहिए। उदाहरण:
+                You can directly copy and paste two columns (Product Name, Current Inventory) from Excel or Google Sheets.
+                Each product should be on a new line. For example:
               </p>
               <pre className="mt-2 p-1.5 bg-slate-50 font-mono text-[10px] text-slate-500 rounded border border-slate-150 inline-block">
                 Wireless Pro Earbuds, 120{"\n"}
@@ -607,7 +607,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Paste Product Inventory Lines (उत्पाद सूची पंक्तियाँ पेस्ट करें):</label>
+            <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Paste Product Inventory Lines:</label>
             <textarea
               id="textarea-bulk-inventory"
               rows={4}
@@ -657,13 +657,13 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           <div className="flex items-start gap-2.5 text-xs text-slate-650 leading-relaxed bg-white p-3.5 rounded-lg border border-emerald-250">
             <HelpCircle size={16} className="text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800">इन्वेंटरी CSV फ़ाइल अपलोड गाइड (Inventory CSV Upload Guide):</p>
+              <p className="font-bold text-slate-800">Inventory CSV Upload Guide:</p>
               <p className="mt-1">
-                अपनी CSV फ़ाइल अपलोड करें जिसमें आपके उत्पादों की वर्तमान स्टॉक मात्रा (Stock/Current Inventory) हो।
-                प्रणाली स्वचालित रूप से <strong>Product Name</strong> और <strong>Quantity/Stock</strong> कॉलम का मिलान करेगी।
+                Upload your CSV file containing current stock quantity (Stock/Current Inventory) of your products.
+                The system will automatically map <strong>Product Name</strong> and <strong>Quantity/Stock</strong> columns.
               </p>
               <div className="mt-2 text-[10px] text-slate-500 font-mono">
-                मान्य कॉलम नाम: <span className="font-bold text-slate-700">Product Name, Item, Stock, Inventory, Qty, Quantity</span>
+                Valid Column Names: <span className="font-bold text-slate-700">Product Name, Item, Stock, Inventory, Qty, Quantity</span>
               </div>
             </div>
           </div>
@@ -694,7 +694,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-700 animate-pulse-subtle">
-                  {dragActive ? 'यहाँ फ़ाइल छोड़ें (Drop file here)' : 'इन्वेंटरी CSV फ़ाइल यहाँ खींचें और छोड़ें या ब्राउज़ करने के लिए क्लिक करें'}
+                  {dragActive ? 'Drop file here' : 'Drag and drop your Inventory CSV file here, or click to browse'}
                 </p>
                 <p className="text-[10px] text-slate-400 font-medium mt-1">Supports standard CSV files (.csv) only</p>
               </div>
@@ -735,7 +735,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         <input
           id="input-planner-search"
           type="text"
-          placeholder="Filter planner by product name (उत्पाद के नाम से खोजें)..."
+          placeholder="Filter planner by product name..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
@@ -897,7 +897,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
             ) : (
               <tr>
                 <td colSpan={6} className="p-8 text-center text-xs text-slate-400 font-medium">
-                  {records.length === 0 ? 'कृपया विश्लेषण के लिए पहले बिक्री डेटा लोड करें।' : 'कोई मिलान उत्पाद नहीं मिला।'}
+                  {records.length === 0 ? 'Please load sales data to plan requirements.' : 'No matching products found.'}
                 </td>
               </tr>
             )}

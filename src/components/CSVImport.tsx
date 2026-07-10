@@ -256,13 +256,13 @@ export default function CSVImport({
           {/* Setup Guide Accordion */}
           {showInstructions && (
             <div className="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2 animate-in slide-in-from-top-2">
-              <p className="font-bold text-blue-600">Google Sheet ko Link karne ka tareeqa (Hindi / English Guide):</p>
+              <p className="font-bold text-blue-600 font-sans">How to Link Your Google Sheet (Step-by-Step Guide):</p>
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-600 font-sans leading-relaxed">
-                <li>Apni sales data ki Google Sheet open karein.</li>
-                <li>Menubar me <strong className="text-slate-800">File &gt; Share &gt; Publish to web</strong> par click karein.</li>
-                <li>Popup me select <strong className="text-slate-800">Entire Document</strong> aur format drop-down se <strong className="text-slate-800">Comma-separated values (.csv)</strong> select karein.</li>
-                <li><strong className="text-slate-800">Publish</strong> button dabayein aur generated link ko copy karein.</li>
-                <li>Uss link ko yahan paste karke <strong className="text-slate-800">Connect & Sync</strong> karein!</li>
+                <li>Open your sales data spreadsheet in Google Sheets.</li>
+                <li>In the top menu, click <strong className="text-slate-800">File &gt; Share &gt; Publish to web</strong>.</li>
+                <li>In the dialog that opens, select <strong className="text-slate-800">Entire Document</strong> (or a specific sheet) and set the format drop-down to <strong className="text-slate-800">Comma-separated values (.csv)</strong>.</li>
+                <li>Click the <strong className="text-slate-800">Publish</strong> button and copy the generated URL link.</li>
+                <li>Paste that link in the field below and click <strong className="text-slate-800">Connect & Sync</strong>!</li>
               </ol>
               <div className="pt-1 text-[10px] text-slate-400">
                 💡 <span className="font-semibold text-slate-500 font-mono">Example:</span> https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv
