@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { SalesRecord, RollingAverageRow } from '../types';
-import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info, ShoppingBag, Landmark } from 'lucide-react';
+import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info, ShoppingBag, Landmark, ArrowDownToLine } from 'lucide-react';
 
 interface AnalyticsTableProps {
   records: SalesRecord[];
@@ -143,6 +143,17 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
     }).format(val);
   };
 
+  const handleExport = (format: 'CSV' | 'PDF') => {
+    import('../utils/exporter').then(exp => {
+      const filename = activeTab === 'PORTAL' ? 'portal_rolling_run_rates' : 'product_rolling_run_rates';
+      if (format === 'CSV') {
+        exp.exportRunRateToCSV(processedData, activeTab, `${filename}.csv`);
+      } else {
+        exp.exportRunRateToPDF(processedData, activeTab, `${filename}.pdf`);
+      }
+    });
+  };
+
   return (
     <div id="analytics-table-section" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 space-y-5 shadow-sm">
       {/* Table Header Controls */}
@@ -180,6 +191,26 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
               }`}
             >
               Column C (Simpiled)
+            </button>
+          </div>
+
+          {/* Table Export Options */}
+          <div className="flex bg-white rounded-lg border border-blue-200 overflow-hidden shadow-2xs">
+            <span className="px-2.5 py-1.5 text-[10px] bg-blue-50 font-bold border-r border-blue-200 text-blue-700 uppercase font-mono flex items-center gap-1">
+              <ArrowDownToLine size={12} />
+              Export
+            </span>
+            <button
+              onClick={() => handleExport('CSV')}
+              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
+            >
+              CSV
+            </button>
+            <button
+              onClick={() => handleExport('PDF')}
+              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
+            >
+              PDF
             </button>
           </div>
         </div>

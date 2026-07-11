@@ -41,7 +41,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
   const [sortField, setSortField] = useState<'productName' | 'avg3MonthUnits' | 'projected6MDemand' | 'currentStock' | 'shortfall' | 'status'>('shortfall');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  // Load inventory from localStorage or initialize with demo values
+  // Load inventory from localStorage
   const [inventory, setInventory] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('ecommerce_current_inventory');
     if (saved) {
@@ -51,20 +51,41 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         console.error('Failed to parse saved inventory', e);
       }
     }
-    // Realistic default values for standard products
-    return {
-      'Wireless Pro Earbuds': 180,
-      'Fitband Pulse Smartwatch': 65,
-      'Premium Leather Wallet': 210,
-      'Ergonomic Office Chair': 24,
-      'Stainless Steel HydraBottle': 110
-    };
+    return {};
   });
 
   // Save to localStorage whenever inventory changes
   useEffect(() => {
     localStorage.setItem('ecommerce_current_inventory', JSON.stringify(inventory));
   }, [inventory]);
+
+  // Sync inventory with any currentStock values present in the records
+  useEffect(() => {
+    if (!records || records.length === 0) return;
+
+    const newInventory: Record<string, number> = {};
+    let foundStock = false;
+
+    // Scan records (newest to oldest or oldest to newest) to extract current stock per product.
+    // If records are sorted descending by date, setting the value if not already set gets the most recent stock value.
+    records.forEach(r => {
+      if (r.product && r.currentStock !== undefined && r.currentStock !== null) {
+        if (newInventory[r.product] === undefined) {
+          newInventory[r.product] = r.currentStock;
+          foundStock = true;
+        }
+      }
+    });
+
+    if (foundStock) {
+      setInventory(prev => {
+        return {
+          ...prev,
+          ...newInventory
+        };
+      });
+    }
+  }, [records]);
 
   // Extract unique products and calculate rolling 3-month average units and 6-month demand
   const productCalculations = useMemo(() => {
@@ -471,27 +492,26 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
     };
   }, [productCalculations]);
 
-  // Export to CSV Function
-  const exportForecastCSV = () => {
-    const csvHeader = 'Product Name,Last 3M Monthly Avg Sales (Units),Projected 6M Demand (Units),Current Available Inventory,Stock Requirement (Shortfall),Status\n';
-    const rows = productCalculations.map(p => {
-      const statusText = p.status === 'CRITICAL' ? 'CRITICAL STOCKOUT' : 
-                         p.status === 'UNDERSTOCK' ? 'UNDER-STOCKED' : 
-                         p.status === 'REORDER' ? 'REORDER REQUIRED' : 'STOCK SUFFICIENT';
-      
-      const escapedName = p.productName.includes(',') ? `"${p.productName.replace(/"/g, '""')}"` : p.productName;
-      return `${escapedName},${p.avg3MonthUnits},${p.projected6MDemand},${p.currentStock},${p.shortfall},${statusText}`;
-    }).join('\n');
-
-    const blob = new Blob([csvHeader + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `6_month_stock_requirement_report_${new Date().toISOString().slice(0, 10)}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Dynamic Export CSV and PDF Function
+  const handleExport = (format: 'CSV' | 'PDF') => {
+    import('../utils/exporter').then(exp => {
+      const rowsForExport = productCalculations.map(p => ({
+        productName: p.productName,
+        runRate: p.avg3MonthUnits,
+        projectedDemand: p.projected6MDemand,
+        currentStock: p.currentStock,
+        netRequirement: p.shortfall,
+        status: p.status === 'CRITICAL' ? 'CRITICAL' : 
+                p.status === 'UNDERSTOCK' ? 'UNDERSTOCK' : 
+                p.status === 'REORDER' ? 'REORDER' : 'SUFFICIENT'
+      }));
+      const dateStr = new Date().toISOString().slice(0, 10);
+      if (format === 'CSV') {
+        exp.exportStockPlannerToCSV(rowsForExport, `6_month_stock_requirement_report_${dateStr}.csv`);
+      } else {
+        exp.exportStockPlannerToPDF(rowsForExport, `6_month_stock_requirement_report_${dateStr}.pdf`);
+      }
+    });
   };
 
   return (
@@ -544,15 +564,29 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
             {isBulkOpen ? 'Close Bulk Importer' : 'Bulk Copy-Paste Inventory'}
           </button>
 
-          <button
-            id="btn-export-forecast-report"
-            onClick={exportForecastCSV}
-            disabled={productCalculations.length === 0}
-            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <ArrowDownToLine size={14} />
-            Export Forecast CSV
-          </button>
+          {/* Table Export Options */}
+          <div className="flex bg-white rounded-lg border border-emerald-200 overflow-hidden shadow-2xs">
+            <span className="px-2.5 py-1.5 text-[10px] bg-emerald-50 font-bold border-r border-emerald-200 text-emerald-700 uppercase font-mono flex items-center gap-1">
+              <ArrowDownToLine size={12} />
+              Export
+            </span>
+            <button
+              id="btn-export-forecast-csv"
+              onClick={() => handleExport('CSV')}
+              disabled={productCalculations.length === 0}
+              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-emerald-700 border-r border-slate-150 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              CSV
+            </button>
+            <button
+              id="btn-export-forecast-pdf"
+              onClick={() => handleExport('PDF')}
+              disabled={productCalculations.length === 0}
+              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-emerald-700 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              PDF
+            </button>
+          </div>
         </div>
       </div>
 

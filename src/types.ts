@@ -11,6 +11,7 @@ export interface SalesRecord {
   size?: string;      // S, M, L, XL, XXL, etc.
   colour?: string;    // Black, White, Red, Blue, etc.
   imageLink?: string; // Image Link URL
+  currentStock?: number; // Current Stock Qty
 }
 
 export interface RollingAverageRow {

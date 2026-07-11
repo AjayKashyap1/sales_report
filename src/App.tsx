@@ -8,17 +8,17 @@ import AnalyticsTable from './components/AnalyticsTable';
 import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
-import SalesReportTable from './components/SalesReportTable';
 import SearchableDropdown from './components/SearchableDropdown';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet } from 'lucide-react';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
-  const [records, setRecords] = useState<SalesRecord[]>([]);
+  const [records, setRecords] = useState<SalesRecord[]>(() => generateDemoData());
   const [thresholds, setThresholds] = useState<AlertThreshold[]>(initialThresholds);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'REPORT' | 'RUN_RATE' | 'STOCK_PLANNER'>('REPORT');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER' | 'SYNC'>('DASHBOARD');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Advanced Multi-Select Filters States
   const [selectedPortals, setSelectedPortals] = useState<string[]>([]);
@@ -158,13 +158,17 @@ export default function App() {
       if (saved) {
         try { return JSON.parse(saved); } catch (e) {}
       }
-      return {
-        'Wireless Pro Earbuds': 180,
-        'Fitband Pulse Smartwatch': 65,
-        'Premium Leather Wallet': 210,
-        'Ergonomic Office Chair': 24,
-        'Stainless Steel HydraBottle': 110
-      };
+      
+      // Dynamic fallback from records' currentStock property if present
+      const extracted: Record<string, number> = {};
+      filteredRecords.forEach(r => {
+        if (r.product && r.currentStock !== undefined && r.currentStock !== null) {
+          if (extracted[r.product] === undefined) {
+            extracted[r.product] = r.currentStock;
+          }
+        }
+      });
+      return extracted;
     })();
 
     const uniqueProductNames: string[] = Array.from(new Set(filteredRecords.map(r => r.product)));
@@ -492,19 +496,15 @@ export default function App() {
     showToast('🧹 Live breach notifications cleared.');
   }, [showToast]);
 
-  // Load initial dataset (tries to sync default Google Sheet first, falls back to demo data if offline/error)
+  // Load initial dataset (tries to sync default Google Sheet first, no demo fallback)
   useEffect(() => {
     const defaultSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaZ6A9O82NanD3WNLDnSOb2FIpNVPFnef3RN_DoeudGep31MAL6CQE5sUlbIDe-U7nxVBX0z2TVThw/pub?gid=1397264212&single=true&output=csv';
     
     const initData = async () => {
-      // First generate demo data so the app isn't blank while loading
-      const initialRecords = generateDemoData();
-      setRecords(initialRecords);
-      
       try {
         await fetchGoogleSheetData(defaultSheetUrl);
       } catch (err) {
-        console.warn('Initial Google Sheet sync failed, using local fallback demo data', err);
+        console.warn('Initial Google Sheet sync failed', err);
       }
     };
     
@@ -529,10 +529,147 @@ export default function App() {
         </div>
       )}
 
+      {/* SIDEBAR PANEL (DRAWER) */}
+      {isSidebarOpen && (
+        <div id="sidebar-overlay" className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
+          {/* Backdrop */}
+          <div
+            id="sidebar-backdrop"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+
+          {/* Sidebar Content Panel */}
+          <div
+            id="sidebar-panel-content"
+            className="relative flex flex-col w-full max-w-xs bg-white h-screen shadow-2xl border-r border-slate-200 z-10 p-6 overflow-y-auto animate-in slide-in-from-left duration-300"
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between border-b border-slate-150 pb-4 mb-6">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-md bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-600/10">
+                  <BarChart3 size={16} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Insights Panel</h3>
+                  <p className="text-[9px] text-slate-400 font-mono font-bold">ajay741900@gmail.com</p>
+                </div>
+              </div>
+              
+              <button
+                id="btn-close-sidebar"
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Sidebar Navigation Pages */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono block mb-2.5 px-2">Workspace Pages</span>
+              
+              <button
+                id="sidebar-tab-dashboard"
+                onClick={() => {
+                  setActiveTab('DASHBOARD');
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'DASHBOARD'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <TrendingUp size={16} />
+                <span>Sales Dashboard & Trends</span>
+              </button>
+              
+              <button
+                id="sidebar-tab-run-rate"
+                onClick={() => {
+                  setActiveTab('RUN_RATE');
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'RUN_RATE'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <BarChart3 size={16} />
+                <span>Rolling Run Rates</span>
+              </button>
+
+              <button
+                id="sidebar-tab-stock-planner"
+                onClick={() => {
+                  setActiveTab('STOCK_PLANNER');
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'STOCK_PLANNER'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <Package size={16} />
+                <span>6-Month Stock Planner</span>
+              </button>
+
+              <button
+                id="sidebar-tab-sync"
+                onClick={() => {
+                  setActiveTab('SYNC');
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'SYNC'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <RefreshCw size={16} />
+                <span>Google Sheets & CSV Sync</span>
+              </button>
+            </div>
+
+            {/* SYNC INFORMATION IN SIDE PANEL */}
+            <div className="mt-auto border-t border-slate-150 pt-6 space-y-3.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono block px-2">Sync Status</span>
+              
+              <div className="bg-slate-50 border border-slate-150 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${sheetConfig.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  <span className="text-[11px] font-bold text-slate-700">Google Sheets Sync</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                  Automatic data refresh is configured. Access status updates in real-time.
+                </p>
+              </div>
+
+              <div className="px-2 text-center text-[10px] text-slate-400 font-medium font-mono">
+                Active Client Version 1.2
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* DASHBOARD NAVBAR */}
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
+            {/* 3-DOTS SIDEBAR TOGGLE BUTTON */}
+            <button
+              id="btn-toggle-sidebar"
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex items-center justify-center gap-1.5"
+              title="Open Workspace Menu"
+            >
+              <MoreVertical size={20} className="text-blue-600" />
+            </button>
+
             <div className="h-9 w-9 rounded-md bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-600/10">
               <BarChart3 size={18} />
             </div>
@@ -576,63 +713,43 @@ export default function App() {
           </div>
         </div>
 
-        {/* TABS NAVIGATION BAR */}
-        <div id="navigation-tabs-bar" className="flex flex-wrap border border-slate-200 bg-white p-1 rounded-xl shadow-xs gap-1 relative z-15">
-          <button
-            id="tab-report"
-            onClick={() => setActiveTab('REPORT')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'REPORT'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-            }`}
-          >
-            <FileSpreadsheet size={15} />
-            <span>Detailed Sales Report</span>
-          </button>
-
-          <button
-            id="tab-dashboard"
-            onClick={() => setActiveTab('DASHBOARD')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'DASHBOARD'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-            }`}
-          >
-            <TrendingUp size={15} />
-            <span>Sales Dashboard & Trends</span>
-          </button>
+        {/* WORKSPACE PAGE INDICATOR BAR */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 px-6 py-4 rounded-xl shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center text-blue-600 shrink-0">
+              {activeTab === 'DASHBOARD' && <TrendingUp size={20} />}
+              {activeTab === 'RUN_RATE' && <BarChart3 size={20} />}
+              {activeTab === 'STOCK_PLANNER' && <Package size={20} />}
+              {activeTab === 'SYNC' && <RefreshCw size={20} />}
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-800 font-sans">
+                {activeTab === 'DASHBOARD' && "Sales Dashboard, Trends & Alerts"}
+                {activeTab === 'RUN_RATE' && "Rolling Run Rates Analytics"}
+                {activeTab === 'STOCK_PLANNER' && "6-Month Stock Planner & Requirements"}
+                {activeTab === 'SYNC' && "Google Sheets & CSV Sync Configuration"}
+              </h3>
+              <p className="text-[11px] text-slate-400 font-mono tracking-wide uppercase font-bold mt-0.5">
+                {activeTab === 'DASHBOARD' && "Monitor marketplace trends, charts, and alert threshold breaches"}
+                {activeTab === 'RUN_RATE' && "Examine product-wise and portal-wise rolling averages (3M, 6M, 12M)"}
+                {activeTab === 'STOCK_PLANNER' && "Analyze forecasted demands, current stock levels, and shortfalls"}
+                {activeTab === 'SYNC' && "Configure real-time Google Spreadsheet sync or upload custom CSV reports"}
+              </p>
+            </div>
+          </div>
           
           <button
-            id="tab-run-rate"
-            onClick={() => setActiveTab('RUN_RATE')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'RUN_RATE'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-            }`}
+            id="btn-trigger-sidebar-navigation"
+            onClick={() => setIsSidebarOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-2xs"
           >
-            <BarChart3 size={15} />
-            <span>Rolling Run Rates</span>
-          </button>
-
-          <button
-            id="tab-stock-planner"
-            onClick={() => setActiveTab('STOCK_PLANNER')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'STOCK_PLANNER'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-            }`}
-          >
-            <Package size={15} />
-            <span>6-Month Stock Planner</span>
+            <MoreVertical size={14} className="text-blue-600" />
+            <span>Switch Page / Menu</span>
           </button>
         </div>
 
         {/* CONTROL CENTER */}
-        {records.length > 0 && (
+        {activeTab !== 'SYNC' && records.length > 0 && (
           <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
             {/* Control Header */}
             <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -641,8 +758,8 @@ export default function App() {
                   <Layers size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Filters & Report Export Center</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Refine dataset across all metrics and export custom CSV or PDF files</p>
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Refine Sales Dataset Filters</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Refine dataset across product name, marketplace portal, item, size, and colour</p>
                 </div>
               </div>
               
@@ -723,80 +840,25 @@ export default function App() {
 
               </div>
             )}
-
-            {/* Global Export Center Section */}
-            <div className="bg-slate-50/50 px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-5 border-t border-slate-200">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                  <span className="text-xs font-bold text-slate-700">Active Filtered Records: <strong className="font-mono text-blue-600">{filteredRecords.length}</strong> / {records.length} total rows</span>
-                </div>
-                <p className="text-[11px] text-slate-500">Export filtered tables and planning metrics to your device instantly.</p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* 1. Transactions Export */}
-                <div className="flex bg-white rounded-lg border border-slate-200 overflow-hidden shadow-2xs">
-                  <span className="px-2.5 py-1.5 text-[10px] bg-slate-100 font-bold border-r border-slate-200 text-slate-500 uppercase font-mono flex items-center">Logs</span>
-                  <button
-                    onClick={() => handleExportRecords('CSV')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
-                  >
-                    CSV
-                  </button>
-                  <button
-                    onClick={() => handleExportRecords('PDF')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
-                  >
-                    PDF
-                  </button>
-                </div>
-
-                {/* 2. Run Rate Export */}
-                <div className="flex bg-white rounded-lg border border-slate-200 overflow-hidden shadow-2xs">
-                  <span className="px-2.5 py-1.5 text-[10px] bg-slate-100 font-bold border-r border-slate-200 text-slate-500 uppercase font-mono flex items-center">Averages</span>
-                  <button
-                    onClick={() => handleExportAverages('CSV')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
-                  >
-                    CSV
-                  </button>
-                  <button
-                    onClick={() => handleExportAverages('PDF')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
-                  >
-                    PDF
-                  </button>
-                </div>
-
-                {/* 3. Stock Planner Export */}
-                <div className="flex bg-white rounded-lg border border-slate-200 overflow-hidden shadow-2xs">
-                  <span className="px-2.5 py-1.5 text-[10px] bg-slate-100 font-bold border-r border-slate-200 text-slate-500 uppercase font-mono flex items-center">Planner</span>
-                  <button
-                    onClick={() => handleExportPlanner('CSV')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
-                  >
-                    CSV
-                  </button>
-                  <button
-                    onClick={() => handleExportPlanner('PDF')}
-                    className="px-3 py-1.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
-                  >
-                    PDF
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
         {/* TAB CONTENTS */}
         
-        {/* 0. DETAILED SALES REPORT */}
-        {activeTab === 'REPORT' && (
+        {/* 0. GOOGLE SHEETS & CSV SYNC */}
+        {activeTab === 'SYNC' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* DATA CONNECTION CHANNELS (CSV & GOOGLE SHEET) */}
+            <div className="bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Data Integration Hub</span>
+              <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
+                <RefreshCw size={18} className="text-blue-600" />
+                Sheet Sync & Data Upload Configuration
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Connect your live e-commerce Google Sheet for automatic, real-time sync, or drag and drop offline sales data reports in CSV format. All updates propagate instantly across all analytics tables and inventory planners.
+              </p>
+            </div>
+
             <CSVImport
               currentRole={currentRole}
               onDataLoaded={handleDataLoaded}
@@ -805,30 +867,12 @@ export default function App() {
               onFetchGoogleSheet={fetchGoogleSheetData}
               totalLoaded={records.length}
             />
-
-            {filteredRecords.length > 0 ? (
-              <SalesReportTable records={filteredRecords} />
-            ) : (
-              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
-                No data matched selected filters. Adjust your filters or load data.
-              </div>
-            )}
           </div>
         )}
 
         {/* 1. SALES DASHBOARD & TRENDS */}
         {activeTab === 'DASHBOARD' && (
           <div className="space-y-8 animate-in fade-in duration-200">
-            {/* DATA CONNECTION CHANNELS (CSV & GOOGLE SHEET) */}
-            <CSVImport
-              currentRole={currentRole}
-              onDataLoaded={handleDataLoaded}
-              sheetConfig={sheetConfig}
-              onSheetConfigChange={setSheetConfig}
-              onFetchGoogleSheet={fetchGoogleSheetData}
-              totalLoaded={records.length}
-            />
-
             {/* RECHARTS DATA VISUALIZATION PANEL */}
             {filteredRecords.length > 0 ? (
               <SalesCharts records={filteredRecords} />

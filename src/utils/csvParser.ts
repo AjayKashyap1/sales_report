@@ -154,6 +154,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
   let sizeIdx = -1;
   let colourIdx = -1;
   let imageLinkIdx = -1;
+  let currentStockIdx = -1;
 
   headers.forEach((header, idx) => {
     const h = header.trim().toLowerCase();
@@ -190,13 +191,17 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
     else if (h === 'image link' || h === 'imagelink' || h.includes('image link') || h.includes('imagelink') || h.includes('image') || h === 'h') {
       if (imageLinkIdx === -1) imageLinkIdx = idx;
     }
-    // 9. Amount / Sales
+    // 9. Current Stock (Column I)
+    else if (h === 'current stock' || h.includes('current stock') || h === 'stock' || h === 'current_stock' || h === 'i') {
+      if (currentStockIdx === -1) currentStockIdx = idx;
+    }
+    // 10. Amount / Sales
     else if (h.includes('amount') || h.includes('revenue') || h.includes('sales') || h.includes('price') || h.includes('total') || h.includes('value')) {
       if (amountIdx === -1) amountIdx = idx;
     }
   });
 
-  // Safe mapping position-based fallbacks (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7)
+  // Safe mapping position-based fallbacks (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8)
   if (dateIdx === -1) dateIdx = 0;
   if (qualityIdx === -1) qualityIdx = headers.length > 1 ? 1 : -1;
   if (sizeIdx === -1) sizeIdx = headers.length > 2 ? 2 : -1;
@@ -205,6 +210,7 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
   if (unitsIdx === -1) unitsIdx = headers.length > 5 ? 5 : (headers.length > 3 ? 3 : 0);
   if (portalIdx === -1) portalIdx = headers.length > 6 ? 6 : (headers.length > 1 ? 1 : 0);
   if (imageLinkIdx === -1) imageLinkIdx = headers.length > 7 ? 7 : -1;
+  if (currentStockIdx === -1) currentStockIdx = headers.length > 8 ? 8 : -1;
 
   const missingCols = [];
   if (dateIdx === -1 || dateIdx >= headers.length) missingCols.push('Date');
@@ -301,6 +307,13 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
         }
       }
 
+      let currentStock: number | undefined = undefined;
+      if (currentStockIdx !== -1 && currentStockIdx < cells.length && cells[currentStockIdx]) {
+        const cleanStockStr = cells[currentStockIdx].replace(/[^0-9]/g, '');
+        currentStock = parseInt(cleanStockStr, 10);
+        if (isNaN(currentStock)) currentStock = undefined;
+      }
+
       records.push({
         id: `csv_row_${i}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         date,
@@ -311,7 +324,8 @@ export function parseCSVText(csvText: string): { records: SalesRecord[]; warning
         quality,
         size,
         colour,
-        imageLink
+        imageLink,
+        currentStock
       });
     } catch (err) {
       console.warn(`Error parsing CSV row ${i}:`, err);
