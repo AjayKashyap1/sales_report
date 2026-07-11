@@ -91,16 +91,16 @@ export default function AlertManager({
     <div id="alert-manager-section" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       {/* IN-APP ALERTS LIST & EMAIL SIMULATION (2 Cols) */}
-      <div id="alerts-display-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-2 flex flex-col justify-between shadow-sm">
+      <div id="alerts-display-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 lg:col-span-2 flex flex-col justify-between shadow-sm">
         <div>
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <div className="h-8 w-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 text-rose-600 dark:text-rose-450 flex items-center justify-center">
                 <BellRing size={16} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Live Threshold Breach Alerts</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">Real-time scan alerts for current month sales figures</p>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Live Threshold Breach Alerts</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Real-time scan alerts for current month sales figures</p>
               </div>
             </div>
 
@@ -108,7 +108,7 @@ export default function AlertManager({
               <button
                 id="btn-clear-alerts"
                 onClick={onClearAlerts}
-                className="text-[11px] text-slate-500 hover:text-rose-700 font-bold transition-colors cursor-pointer border border-slate-200 px-2.5 py-1 rounded-md hover:border-rose-200 bg-white"
+                className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-400 font-bold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-md hover:border-rose-200 dark:hover:border-slate-600 bg-white dark:bg-slate-800"
               >
                 Clear Log
               </button>
@@ -121,42 +121,42 @@ export default function AlertManager({
               systemAlerts.map((alert) => (
                 <div 
                   key={alert.id} 
-                  className="bg-slate-50/50 border border-slate-200/60 rounded-lg p-4 flex gap-3.5 items-start relative overflow-hidden group hover:border-rose-300 transition-all"
+                  className="bg-slate-50/50 dark:bg-slate-850/40 border border-slate-200/60 dark:border-slate-800 rounded-lg p-4 flex gap-3.5 items-start relative overflow-hidden group hover:border-rose-300 dark:hover:border-rose-900/60 transition-all"
                 >
                   <div className="absolute top-0 right-0 h-16 w-16 bg-rose-500/5 blur-xl group-hover:bg-rose-500/10 pointer-events-none transition-all"></div>
-                  <div className="h-9 w-9 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                  <div className="h-9 w-9 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 mt-0.5">
                     <AlertTriangle size={18} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-4">
-                      <h4 className="text-xs font-bold text-slate-800">{alert.title}</h4>
-                      <span className="text-[9px] font-mono text-slate-400 shrink-0 font-bold">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{alert.title}</h4>
+                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 shrink-0 font-bold">
                         {new Date(alert.timestamp).toLocaleTimeString()}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                       {alert.message}
                     </p>
                     
                     {/* Security Integration Proof: Email Alert Sent tag */}
-                    <div className="mt-3 flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-200/50">
-                      <div className="text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/60">
+                      <div className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
                         <Check size={11} strokeWidth={2.5} /> Email Sent
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-500">
-                        Dispatched to: <strong className="text-slate-700 font-mono">ajay741900@gmail.com</strong>
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                        Dispatched to: <strong className="text-slate-700 dark:text-slate-300 font-mono">ajay741900@gmail.com</strong>
                       </span>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="h-60 border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-center p-4">
-                <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-2">
+              <div className="h-60 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg flex flex-col items-center justify-center text-center p-4">
+                <div className="h-10 w-10 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2">
                   <ShieldCheck size={18} />
                 </div>
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">No active breaches</p>
-                <p className="text-[10px] text-slate-400 mt-1 max-w-xs">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">No active breaches</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
                   All active thresholds are performing within safe operational margins for the current month!
                 </p>
               </div>
@@ -165,35 +165,35 @@ export default function AlertManager({
         </div>
 
         {/* Email Policy Alert */}
-        <div className="mt-4 p-3 bg-slate-50 border border-slate-100 rounded-lg flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+        <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-850/50 border border-slate-100 dark:border-slate-800 rounded-lg flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
             <Mail size={15} />
           </div>
-          <div className="text-[10px] text-slate-500 leading-normal">
-            <span className="font-bold text-slate-700">Automated Mail Alerts Policy:</span> Whenever a threshold is breached, our server simulated mail loop sends a telemetry dispatch report directly to the system owner's registered address: <strong className="text-slate-700 font-mono font-bold">ajay741900@gmail.com</strong>.
+          <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
+            <span className="font-bold text-slate-700 dark:text-slate-300">Automated Mail Alerts Policy:</span> Whenever a threshold is breached, our server simulated mail loop sends a telemetry dispatch report directly to the system owner's registered address: <strong className="text-slate-700 dark:text-slate-300 font-mono font-bold">ajay741900@gmail.com</strong>.
           </div>
         </div>
       </div>
 
       {/* THRESHOLD CONFIGURATION PANEL (1 Col) */}
-      <div id="threshold-config-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 flex flex-col justify-between shadow-sm">
+      <div id="threshold-config-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 flex flex-col justify-between shadow-sm">
         <div>
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
             <div className="flex items-center gap-2">
-              <Settings size={16} className="text-blue-600" />
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Threshold Guard Rules</h3>
+              <Settings size={16} className="text-blue-600 dark:text-blue-400" />
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Threshold Guard Rules</h3>
             </div>
             
             {canEdit ? (
               <button
                 id="btn-toggle-config-form"
                 onClick={() => setShowConfig(!showConfig)}
-                className="text-[11px] bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-md border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
+                className="text-[11px] bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-bold px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-900/60 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Plus size={12} /> Add Rule
               </button>
             ) : (
-              <span className="text-[9px] bg-slate-100 text-slate-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                 Read Only
               </span>
             )}
@@ -201,12 +201,12 @@ export default function AlertManager({
 
           {/* Create Threshold Form */}
           {showConfig && canEdit && (
-            <form onSubmit={handleSubmit} className="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">New Threshold Rule</h4>
+            <form onSubmit={handleSubmit} className="mb-5 p-4 bg-slate-50 dark:bg-slate-850/50 border border-slate-200 dark:border-slate-800 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">New Threshold Rule</h4>
               
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Target Segment</label>
-                <div className="grid grid-cols-3 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Target Segment</label>
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
                   {(['TOTAL', 'PORTAL', 'PRODUCT'] as const).map((type) => (
                     <button
                       key={type}
@@ -214,7 +214,7 @@ export default function AlertManager({
                       id={`btn-target-type-${type.toLowerCase()}`}
                       onClick={() => setTargetType(type)}
                       className={`py-1 text-[10px] font-semibold rounded-md transition-colors cursor-pointer ${
-                        targetType === type ? 'bg-white text-blue-600 font-bold shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                        targetType === type ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-bold shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                       }`}
                     >
                       {type}
@@ -225,12 +225,12 @@ export default function AlertManager({
 
               {targetType !== 'TOTAL' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Select Name</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">Select Name</label>
                   <select
                     id="select-threshold-target"
                     value={targetName}
                     onChange={(e) => setTargetName(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg text-xs text-slate-700 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
                     {targetType === 'PORTAL'
                       ? uniquePortals.map(p => <option key={p} value={p}>{p}</option>)
@@ -242,12 +242,12 @@ export default function AlertManager({
 
               <div className="grid grid-cols-1 gap-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Condition</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">Condition</label>
                   <select
                     id="select-threshold-condition"
                     value={condition}
                     onChange={(e) => setCondition(e.target.value as any)}
-                    className="w-full bg-white border border-slate-200 rounded-lg text-xs text-slate-700 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
                     <option value="LESS_THAN">Less Than (&lt;)</option>
                     <option value="GREATER_THAN">Greater Than (&gt;)</option>
@@ -256,7 +256,7 @@ export default function AlertManager({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                   Threshold Value (Units Qty)
                 </label>
                 <input
@@ -265,7 +265,7 @@ export default function AlertManager({
                   placeholder="e.g. 10"
                   value={valueInput}
                   onChange={(e) => setValueInput(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   required
                 />
               </div>
@@ -275,7 +275,7 @@ export default function AlertManager({
                   id="btn-cancel-threshold"
                   type="button"
                   onClick={() => setShowConfig(false)}
-                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold cursor-pointer"
+                  className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -291,7 +291,7 @@ export default function AlertManager({
           )}
 
           {successMsg && (
-            <div className="mb-4 p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[11px] text-emerald-700 font-bold">
+            <div className="mb-4 p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-lg text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
               ✓ {successMsg}
             </div>
           )}
@@ -301,23 +301,23 @@ export default function AlertManager({
             {thresholds.map((t) => (
               <div 
                 key={t.id} 
-                className={`p-3 bg-slate-50/50 border ${
-                  t.isActive ? 'border-slate-200' : 'border-slate-100 opacity-55'
+                className={`p-3 bg-slate-50/50 dark:bg-slate-850/30 border ${
+                  t.isActive ? 'border-slate-200 dark:border-slate-800' : 'border-slate-100 dark:border-slate-850 opacity-55'
                 } rounded-lg flex items-center justify-between gap-3`}
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-700 truncate">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
                       {t.targetName}
                     </span>
-                    <span className="text-[9px] bg-slate-200/60 text-slate-500 font-bold px-1.5 py-0.2 rounded shrink-0 uppercase">
+                    <span className="text-[9px] bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold px-1.5 py-0.2 rounded shrink-0 uppercase">
                       {t.targetType}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 font-semibold font-sans mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold font-sans mt-0.5">
                     {t.metric === 'REVENUE' ? 'Revenue' : 'Units'}{' '}
                     {t.condition === 'LESS_THAN' ? 'falls below' : 'exceeds'}{' '}
-                    <strong className="text-slate-700 font-bold">
+                    <strong className="text-slate-700 dark:text-slate-200 font-bold">
                       {t.metric === 'REVENUE' ? formatCurrency(t.value) : `${t.value} units`}
                     </strong>
                   </p>
@@ -329,14 +329,14 @@ export default function AlertManager({
                     id={`btn-toggle-threshold-${t.id}`}
                     onClick={() => canEdit && onToggleThreshold(t.id)}
                     disabled={!canEdit}
-                    className={`p-1 hover:text-slate-800 transition-colors ${
+                    className={`p-1 hover:text-slate-800 dark:hover:text-slate-100 transition-colors ${
                       !canEdit ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                   >
                     {t.isActive ? (
-                      <ToggleRight size={22} className="text-blue-600" />
+                      <ToggleRight size={22} className="text-blue-600 dark:text-blue-400" />
                     ) : (
-                      <ToggleLeft size={22} className="text-slate-300" />
+                      <ToggleLeft size={22} className="text-slate-300 dark:text-slate-650" />
                     )}
                   </button>
 
@@ -345,7 +345,7 @@ export default function AlertManager({
                     id={`btn-delete-threshold-${t.id}`}
                     onClick={() => isAdmin && onDeleteThreshold(t.id)}
                     disabled={!isAdmin}
-                    className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-rose-600 transition-colors ${
+                    className={`p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-600 dark:hover:text-rose-450 transition-colors ${
                       !isAdmin ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                     title="Admin Exclusive Delete"
@@ -358,7 +358,7 @@ export default function AlertManager({
           </div>
         </div>
 
-        <div className="mt-4 pt-3.5 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-1.5">
+        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
           <HelpCircle size={14} className="text-slate-400" />
           <span>Rules trigger dynamically whenever new data refreshes or gets uploaded.</span>
         </div>

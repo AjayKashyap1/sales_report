@@ -68,24 +68,24 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
   };
 
   return (
-    <div id="email-exporter-container" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+    <div id="email-exporter-container" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+          <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900 flex items-center justify-center text-emerald-600 dark:text-emerald-450">
             <Mail size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Secure Email Report Exporter</h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Export metrics summaries, tables, and graphs instantly</p>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Secure Email Report Exporter</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Export metrics summaries, tables, and graphs instantly</p>
           </div>
         </div>
 
         {canExport ? (
-          <span className="text-[10px] bg-blue-50 border border-blue-200 text-blue-700 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="text-[10px] bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             Access Granted
           </span>
         ) : (
-          <span className="text-[10px] bg-rose-50 border border-rose-100 text-rose-600 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+          <span className="text-[10px] bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 text-rose-600 dark:text-rose-400 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
             <ShieldAlert size={10} /> Unauthorized
           </span>
         )}
@@ -95,19 +95,19 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
         {/* Controls Column */}
         <div className="space-y-4">
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Recipient Email Address</label>
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 tracking-wider">Recipient Email Address</label>
             <input
               id="input-export-recipient"
               type="email"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               disabled={!canExport || isExporting}
-              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 tracking-wider">Export File Format</label>
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 tracking-wider">Export File Format</label>
             <div className="grid grid-cols-3 gap-2">
               {(['PDF', 'EXCEL', 'CSV'] as const).map((fmt) => (
                 <button
@@ -117,8 +117,8 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
                   disabled={!canExport || isExporting}
                   className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
                     format === fmt
-                      ? 'bg-blue-50 border-blue-600 text-blue-700 shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
+                      ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-600 dark:border-blue-500 text-blue-700 dark:text-blue-400 shadow-xs'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700'
                   } disabled:opacity-50`}
                 >
                   {fmt === 'PDF' && <FileText size={16} />}
@@ -137,9 +137,9 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
               checked={includeBreaches}
               onChange={(e) => setIncludeBreaches(e.target.checked)}
               disabled={!canExport || isExporting}
-              className="h-4 w-4 bg-white border border-slate-300 rounded text-blue-600 focus:ring-blue-500/20"
+              className="h-4 w-4 bg-white dark:bg-slate-850 border border-slate-300 dark:border-slate-700 rounded text-blue-600 focus:ring-blue-500/20"
             />
-            <label htmlFor="cb-include-breaches" className="text-xs text-slate-500 font-semibold select-none cursor-pointer">
+            <label htmlFor="cb-include-breaches" className="text-xs text-slate-500 dark:text-slate-400 font-semibold select-none cursor-pointer">
               Include current month active threshold alerts in summary
             </label>
           </div>
@@ -148,7 +148,7 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
             id="btn-dispatch-report"
             onClick={handleExport}
             disabled={!canExport || isExporting || records.length === 0}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-blue-500/10 cursor-pointer"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-blue-500/10 cursor-pointer"
           >
             {isExporting ? (
               <>
@@ -164,10 +164,10 @@ export default function EmailExporter({ currentRole, records }: EmailExporterPro
           </button>
 
           {!canExport && (
-            <div className="p-3 bg-rose-50 border border-rose-100 rounded-lg flex gap-2 items-start">
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-lg flex gap-2 items-start">
               <ShieldAlert size={14} className="text-rose-600 shrink-0 mt-0.5" />
-              <p className="text-[11px] text-rose-700 leading-normal">
-                Your role (<strong className="uppercase">{currentRole}</strong>) is restricted from exporting financial records. Please switch to <strong className="font-bold text-slate-800">Manager</strong> or <strong className="font-bold text-slate-800">Admin</strong> in the switcher at the top.
+              <p className="text-[11px] text-rose-700 dark:text-rose-450 leading-normal">
+                Your role (<strong className="uppercase">{currentRole}</strong>) is restricted from exporting financial records. Please switch to <strong className="font-bold text-slate-800 dark:text-slate-100">Manager</strong> or <strong className="font-bold text-slate-800 dark:text-slate-100">Admin</strong> in the switcher at the top.
               </p>
             </div>
           )}

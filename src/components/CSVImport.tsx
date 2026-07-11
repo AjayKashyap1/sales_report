@@ -157,8 +157,8 @@ export default function CSVImport({
       {/* LOCAL CSV UPLOAD */}
       <div 
         id="local-csv-card"
-        className={`bg-white border rounded-lg p-5 md:p-6 transition-all shadow-sm ${
-          dragActive ? 'border-blue-500 ring-2 ring-blue-500/10' : 'border-slate-200'
+        className={`bg-white dark:bg-slate-900 border rounded-lg p-5 md:p-6 transition-all shadow-sm ${
+          dragActive ? 'border-blue-500 ring-2 ring-blue-500/10' : 'border-slate-200 dark:border-slate-800'
         }`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
@@ -167,18 +167,18 @@ export default function CSVImport({
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <FileSpreadsheet size={18} className="text-blue-600" />
               Sales CSV File Upload
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Upload local transaction data file (.csv)</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Upload local transaction data file (.csv)</p>
           </div>
           {canUpload ? (
-            <span className="text-[10px] bg-rose-50 border border-rose-200 text-rose-700 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="text-[10px] bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               Admin Exclusive
             </span>
           ) : (
-            <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-500 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               Disabled ({currentRole})
             </span>
           )}
@@ -189,8 +189,8 @@ export default function CSVImport({
           onClick={() => canUpload && fileInputRef.current?.click()}
           className={`h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center p-4 text-center transition-all ${
             canUpload 
-              ? 'border-slate-300 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-400 cursor-pointer' 
-              : 'border-slate-200 bg-slate-50/20 cursor-not-allowed opacity-60'
+              ? 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-850/30 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-400 dark:hover:border-slate-500 cursor-pointer' 
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 cursor-not-allowed opacity-60'
           }`}
         >
           <input
@@ -201,53 +201,53 @@ export default function CSVImport({
             className="hidden"
             disabled={!canUpload}
           />
-          <div className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-3 shadow-xs">
+          <div className="h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center mb-3 shadow-xs">
             <Upload size={18} className={canUpload ? 'text-blue-600 animate-pulse' : 'text-slate-400'} />
           </div>
           {canUpload ? (
             <>
-              <p className="text-xs font-semibold text-slate-600">
-                Drag & drop your sales CSV file here, or <span className="text-blue-600 hover:underline">browse</span>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                Drag & drop your sales CSV file here, or <span className="text-blue-600 dark:text-blue-400 hover:underline">browse</span>
               </p>
-              <p className="text-[10px] text-slate-400 mt-1">Supports Amazon, Flipkart, Website headers dynamically</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Supports Amazon, Flipkart, Website headers dynamically</p>
             </>
           ) : (
-            <p className="text-xs text-slate-500">
-              Only users with <span className="text-rose-600 font-semibold">ADMIN</span> role can upload local CSV files.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Only users with <span className="text-rose-600 dark:text-rose-400 font-semibold">ADMIN</span> role can upload local CSV files.
             </p>
           )}
         </div>
 
         {/* Local Warnings / Success */}
         {localWarning && (
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2 items-start">
-            <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-800 font-mono leading-relaxed">{localWarning}</p>
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 rounded-lg flex gap-2 items-start">
+            <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-800 dark:text-amber-300 font-mono leading-relaxed">{localWarning}</p>
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
-          <span className="font-mono">Loaded Records: <strong className="text-blue-600">{totalLoaded}</strong></span>
-          <span className="text-slate-600 flex items-center gap-1 font-semibold">
-            <CheckCircle2 size={12} className="text-emerald-600" /> Auto-detected Column Headers
+        <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-850/50 border border-slate-100 dark:border-slate-800 p-2.5 rounded-lg">
+          <span className="font-mono">Loaded Records: <strong className="text-blue-600 dark:text-blue-400">{totalLoaded}</strong></span>
+          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1 font-semibold">
+            <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-400" /> Auto-detected Column Headers
           </span>
         </div>
       </div>
 
       {/* GOOGLE SHEET REAL-TIME FEED */}
-      <div id="google-sheet-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 flex flex-col justify-between shadow-sm">
+      <div id="google-sheet-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 flex flex-col justify-between shadow-sm">
         <div>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                <Link2 size={18} className="text-emerald-600" />
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <Link2 size={18} className="text-emerald-600 animate-pulse" />
                 Google Sheet Live Synchronization
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">Real-time update directly from web-shared CSV</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time update directly from web-shared CSV</p>
             </div>
             <button 
               onClick={() => setShowInstructions(!showInstructions)}
-              className="text-slate-500 hover:text-blue-600 text-xs flex items-center gap-1 underline font-semibold focus:outline-none"
+              className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-xs flex items-center gap-1 underline font-semibold focus:outline-none"
             >
               <HelpCircle size={14} /> Help / Setup Guide
             </button>
@@ -255,24 +255,24 @@ export default function CSVImport({
 
           {/* Setup Guide Accordion */}
           {showInstructions && (
-            <div className="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2 animate-in slide-in-from-top-2">
-              <p className="font-bold text-blue-600 font-sans">How to Link Your Google Sheet (Step-by-Step Guide):</p>
-              <ol className="list-decimal pl-4 space-y-1.5 text-slate-600 font-sans leading-relaxed">
+            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-lg text-xs space-y-2 animate-in slide-in-from-top-2">
+              <p className="font-bold text-blue-600 dark:text-blue-400 font-sans">How to Link Your Google Sheet (Step-by-Step Guide):</p>
+              <ol className="list-decimal pl-4 space-y-1.5 text-slate-600 dark:text-slate-300 font-sans leading-relaxed">
                 <li>Open your sales data spreadsheet in Google Sheets.</li>
-                <li>In the top menu, click <strong className="text-slate-800">File &gt; Share &gt; Publish to web</strong>.</li>
-                <li>In the dialog that opens, select <strong className="text-slate-800">Entire Document</strong> (or a specific sheet) and set the format drop-down to <strong className="text-slate-800">Comma-separated values (.csv)</strong>.</li>
-                <li>Click the <strong className="text-slate-800">Publish</strong> button and copy the generated URL link.</li>
-                <li>Paste that link in the field below and click <strong className="text-slate-800">Connect & Sync</strong>!</li>
+                <li>In the top menu, click <strong className="text-slate-800 dark:text-slate-100">File &gt; Share &gt; Publish to web</strong>.</li>
+                <li>In the dialog that opens, select <strong className="text-slate-800 dark:text-slate-100">Entire Document</strong> (or a specific sheet) and set the format drop-down to <strong className="text-slate-800 dark:text-slate-100">Comma-separated values (.csv)</strong>.</li>
+                <li>Click the <strong className="text-slate-800 dark:text-slate-100">Publish</strong> button and copy the generated URL link.</li>
+                <li>Paste that link in the field below and click <strong className="text-slate-800 dark:text-slate-100">Connect & Sync</strong>!</li>
               </ol>
-              <div className="pt-1 text-[10px] text-slate-400">
-                💡 <span className="font-semibold text-slate-500 font-mono">Example:</span> https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv
+              <div className="pt-1 text-[10px] text-slate-400 dark:text-slate-500">
+                💡 <span className="font-semibold text-slate-500 dark:text-slate-400 font-mono">Example:</span> https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv
               </div>
             </div>
           )}
 
           <form onSubmit={handleGoogleSheetSubmit} className="space-y-3 mt-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Paste Published Web CSV URL</label>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Paste Published Web CSV URL</label>
               <div className="flex gap-2">
                 <input
                   id="input-sheet-url"
@@ -281,13 +281,13 @@ export default function CSVImport({
                   value={sheetUrlInput}
                   onChange={(e) => setSheetUrlInput(e.target.value)}
                   disabled={!canModifyConfig}
-                  className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   id="btn-sync-sheet"
                   type="submit"
                   disabled={!canModifyConfig || !sheetUrlInput.trim() || sheetConfig.status === 'FETCHING'}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 focus:outline-none cursor-pointer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 focus:outline-none cursor-pointer"
                 >
                   {sheetConfig.status === 'FETCHING' ? (
                     <RotateCw size={12} className="animate-spin" />
@@ -300,7 +300,7 @@ export default function CSVImport({
             </div>
 
             {/* Interval and Polling options */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-1 border-t border-slate-100">
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-1 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <button
@@ -310,8 +310,8 @@ export default function CSVImport({
                     disabled={!canModifyConfig || !sheetConfig.url}
                     className={`h-7 px-3 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                       sheetConfig.isEnabled
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                        : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {sheetConfig.isEnabled ? (
@@ -327,13 +327,13 @@ export default function CSVImport({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-slate-500 font-semibold">Frequency:</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Frequency:</span>
                   <select
                     id="select-refresh-interval"
                     value={sheetConfig.refreshInterval}
                     onChange={handleIntervalChange}
                     disabled={!canModifyConfig || !sheetConfig.isEnabled}
-                    className="bg-white border border-slate-200 rounded-lg text-xs text-slate-700 py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-700 dark:text-slate-200 py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value={10}>Every 10s</option>
                     <option value={30}>Every 30s</option>
@@ -344,7 +344,7 @@ export default function CSVImport({
               </div>
 
               {refreshCountdown !== null && sheetConfig.isEnabled && (
-                <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Polling in {refreshCountdown}s...
                 </div>
@@ -354,21 +354,21 @@ export default function CSVImport({
         </div>
 
         {/* Sync Logs and Info */}
-        <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-lg text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-semibold">Status:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-semibold">Status:</span>
             {sheetConfig.status === 'IDLE' && (
-              <span className="text-slate-500 flex items-center gap-1">
+              <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 ● Not Linked
               </span>
             )}
             {sheetConfig.status === 'FETCHING' && (
-              <span className="text-emerald-600 flex items-center gap-1 font-semibold animate-pulse">
+              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold animate-pulse">
                 <RotateCw size={11} className="animate-spin" /> Fetching latest sheets data...
               </span>
             )}
             {sheetConfig.status === 'SUCCESS' && (
-              <span className="text-emerald-700 flex items-center gap-1 font-bold">
+              <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1 font-bold">
                 <CheckCircle2 size={12} className="text-emerald-600" /> Connected
               </span>
             )}
@@ -379,7 +379,7 @@ export default function CSVImport({
             )}
           </div>
 
-          <div className="text-slate-500 text-right font-semibold">
+          <div className="text-slate-500 dark:text-slate-400 text-right font-semibold">
             {sheetConfig.lastFetched ? (
               <span className="font-mono">Synced: {new Date(sheetConfig.lastFetched).toLocaleTimeString()}</span>
             ) : (
@@ -389,7 +389,7 @@ export default function CSVImport({
         </div>
 
         {sheetConfig.errorMessage && (
-          <div className="mt-2.5 p-2.5 bg-rose-50 border border-rose-100 rounded-lg text-[10px] text-rose-700 font-mono leading-relaxed">
+          <div className="mt-2.5 p-2.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-lg text-[10px] text-rose-700 dark:text-rose-400 font-mono leading-relaxed">
             ⚠️ {sheetConfig.errorMessage}
           </div>
         )}

@@ -9,7 +9,7 @@ import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import EmailExporter from './components/EmailExporter';
 import SearchableDropdown from './components/SearchableDropdown';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X } from 'lucide-react';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
@@ -20,18 +20,37 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER' | 'SYNC'>('DASHBOARD');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
+  // Theme Switching state
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   // Advanced Multi-Select Filters States
   const [selectedPortals, setSelectedPortals] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColours, setSelectedColours] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
   
   const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>({
     url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaZ6A9O82NanD3WNLDnSOb2FIpNVPFnef3RN_DoeudGep31MAL6CQE5sUlbIDe-U7nxVBX0z2TVThw/pub?gid=1397264212&single=true&output=csv',
     isEnabled: true,
-    refreshInterval: 10,
+    refreshInterval: 60,
     lastFetched: null,
     status: 'IDLE',
     errorMessage: null
@@ -75,9 +94,22 @@ export default function App() {
       const matchesQuality = selectedQualities.length === 0 || (r.quality && selectedQualities.includes(r.quality));
       const matchesSize = selectedSizes.length === 0 || (r.size && selectedSizes.includes(r.size));
       const matchesColour = selectedColours.length === 0 || (r.colour && selectedColours.includes(r.colour));
-      return matchesPortal && matchesProduct && matchesQuality && matchesSize && matchesColour;
+      
+      let matchesDate = true;
+      if (startDate) {
+        const sDate = new Date(startDate);
+        sDate.setHours(0, 0, 0, 0);
+        matchesDate = matchesDate && r.date >= sDate;
+      }
+      if (endDate) {
+        const eDate = new Date(endDate);
+        eDate.setHours(23, 59, 59, 999);
+        matchesDate = matchesDate && r.date <= eDate;
+      }
+
+      return matchesPortal && matchesProduct && matchesQuality && matchesSize && matchesColour && matchesDate;
     });
-  }, [records, selectedPortals, selectedProducts, selectedQualities, selectedSizes, selectedColours]);
+  }, [records, selectedPortals, selectedProducts, selectedQualities, selectedSizes, selectedColours, startDate, endDate]);
 
   const clearAllFilters = () => {
     setSelectedPortals([]);
@@ -85,6 +117,8 @@ export default function App() {
     setSelectedQualities([]);
     setSelectedSizes([]);
     setSelectedColours([]);
+    setStartDate(null);
+    setEndDate(null);
     showToast('🧹 All dataset filters cleared.');
   };
 
@@ -512,15 +546,15 @@ export default function App() {
   }, [fetchGoogleSheetData]);
 
   return (
-    <div id="app-root-container" className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-20 selection:bg-blue-500/20 selection:text-slate-900">
+    <div id="app-root-container" className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased pb-20 selection:bg-blue-500/20 selection:text-slate-900 transition-colors duration-200">
       
       {/* BACKGROUND DECORATIONS */}
-      <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none" />
-      <div className="absolute top-0 right-1/4 h-80 w-80 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-50 dark:from-blue-950/20 to-transparent pointer-events-none" />
+      <div className="absolute top-0 right-1/4 h-80 w-80 bg-blue-100/40 dark:bg-blue-900/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* FLOATING TOAST BAR */}
       {toastMessage && (
-        <div id="toast-notification" className="fixed bottom-6 right-6 z-50 bg-white border border-blue-200 text-xs font-bold text-blue-700 py-3.5 px-4 rounded-lg shadow-lg flex items-center gap-2.5 max-w-sm animate-in slide-in-from-bottom-5 duration-300">
+        <div id="toast-notification" className="fixed bottom-6 right-6 z-50 bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900 text-xs font-bold text-blue-700 dark:text-blue-300 py-3.5 px-4 rounded-lg shadow-lg flex items-center gap-2.5 max-w-sm animate-in slide-in-from-bottom-5 duration-300">
           <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
@@ -542,24 +576,24 @@ export default function App() {
           {/* Sidebar Content Panel */}
           <div
             id="sidebar-panel-content"
-            className="relative flex flex-col w-full max-w-xs bg-white h-screen shadow-2xl border-r border-slate-200 z-10 p-6 overflow-y-auto animate-in slide-in-from-left duration-300"
+            className="relative flex flex-col w-full max-w-xs bg-white dark:bg-slate-900 h-screen shadow-2xl border-r border-slate-200 dark:border-slate-800 z-10 p-6 overflow-y-auto animate-in slide-in-from-left duration-300"
           >
             {/* Sidebar Header */}
-            <div className="flex items-center justify-between border-b border-slate-150 pb-4 mb-6">
+            <div className="flex items-center justify-between border-b border-slate-150 dark:border-slate-800 pb-4 mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-md bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-600/10">
                   <BarChart3 size={16} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Insights Panel</h3>
-                  <p className="text-[9px] text-slate-400 font-mono font-bold">ajay741900@gmail.com</p>
+                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Insights Panel</h3>
+                  <p className="text-[9px] text-slate-400 dark:text-slate-500 font-mono font-bold">ajay741900@gmail.com</p>
                 </div>
               </div>
               
               <button
                 id="btn-close-sidebar"
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-300 hover:text-slate-600 dark:hover:text-slate-100 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -657,79 +691,89 @@ export default function App() {
       )}
 
       {/* DASHBOARD NAVBAR */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+        <div className="max-w-full lg:px-12 px-4 md:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* 3-DOTS SIDEBAR TOGGLE BUTTON */}
             <button
               id="btn-toggle-sidebar"
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex items-center justify-center gap-1.5"
+              className="p-2 -ml-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-150 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex items-center justify-center gap-1.5"
               title="Open Workspace Menu"
             >
-              <MoreVertical size={20} className="text-blue-600" />
+              <MoreVertical size={20} className="text-blue-600 dark:text-blue-400" />
             </button>
 
             <div className="h-9 w-9 rounded-md bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-600/10">
               <BarChart3 size={18} />
             </div>
             <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-slate-800 font-sans">E-Commerce Sales Insights</h1>
-              <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-bold">Live Sync & Multi-Marketplace Dashboard</p>
+              <h1 className="text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 font-sans">E-Commerce Sales Insights</h1>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono uppercase tracking-wider font-bold">Live Sync & Multi-Marketplace Dashboard</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {sheetConfig.isEnabled && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-700 font-mono">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 font-mono">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Google Sync Active
               </span>
             )}
+
+            {/* THEME TOGGLE SWITCHER */}
+            <button
+              id="btn-theme-toggle"
+              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center justify-center"
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            >
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
             
             <div className="text-right hidden md:block">
-              <span className="text-[9px] text-slate-400 block font-mono font-bold uppercase tracking-wider">Telemetry Owner</span>
-              <span className="text-xs font-bold text-slate-700 font-mono">ajay741900@gmail.com</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono font-bold uppercase tracking-wider">Telemetry Owner</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">ajay741900@gmail.com</span>
             </div>
           </div>
         </div>
       </header>
 
       {/* MAIN LAYOUT */}
-      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-8 space-y-8 relative z-10">
+      <main className="max-w-full lg:px-12 px-4 md:px-8 pt-8 space-y-8 relative z-10">
         
         {/* WELCOME BANNER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm">
           <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Financial Workspace</span>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight mt-1">Sales Report Dashboard</h2>
-            <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium leading-relaxed">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Financial Workspace</span>
+            <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight mt-1">Sales Report Dashboard</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl font-medium leading-relaxed">
               Portal-wise (Amazon, Flipkart) and Product-wise performance logs with rolling averages, automatic real-time Google Sheets fetching, and threshold breach dispatches.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-slate-500 text-xs font-mono shrink-0 bg-slate-50 p-2.5 rounded-lg border border-slate-150">
-            <Layers size={14} className="text-blue-600" />
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-mono shrink-0 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-150 dark:border-slate-700">
+            <Layers size={14} className="text-blue-600 dark:text-blue-400" />
             <span className="font-bold">Time Anchor: 10 July 2026</span>
           </div>
         </div>
 
         {/* WORKSPACE PAGE INDICATOR BAR */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 px-6 py-4 rounded-xl shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-6 py-4 rounded-xl shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center text-blue-600 shrink-0">
+            <div className="h-10 w-10 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
               {activeTab === 'DASHBOARD' && <TrendingUp size={20} />}
               {activeTab === 'RUN_RATE' && <BarChart3 size={20} />}
               {activeTab === 'STOCK_PLANNER' && <Package size={20} />}
               {activeTab === 'SYNC' && <RefreshCw size={20} />}
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-slate-800 font-sans">
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 font-sans">
                 {activeTab === 'DASHBOARD' && "Sales Dashboard, Trends & Alerts"}
                 {activeTab === 'RUN_RATE' && "Rolling Run Rates Analytics"}
                 {activeTab === 'STOCK_PLANNER' && "6-Month Stock Planner & Requirements"}
                 {activeTab === 'SYNC' && "Google Sheets & CSV Sync Configuration"}
               </h3>
-              <p className="text-[11px] text-slate-400 font-mono tracking-wide uppercase font-bold mt-0.5">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono tracking-wide uppercase font-bold mt-0.5">
                 {activeTab === 'DASHBOARD' && "Monitor marketplace trends, charts, and alert threshold breaches"}
                 {activeTab === 'RUN_RATE' && "Examine product-wise and portal-wise rolling averages (3M, 6M, 12M)"}
                 {activeTab === 'STOCK_PLANNER' && "Analyze forecasted demands, current stock levels, and shortfalls"}
@@ -741,25 +785,25 @@ export default function App() {
           <button
             id="btn-trigger-sidebar-navigation"
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-2xs"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-2xs"
           >
-            <MoreVertical size={14} className="text-blue-600" />
+            <MoreVertical size={14} className="text-blue-600 dark:text-blue-400" />
             <span>Switch Page / Menu</span>
           </button>
         </div>
 
         {/* CONTROL CENTER */}
         {activeTab !== 'SYNC' && records.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
             {/* Control Header */}
-            <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-blue-100 rounded-lg text-blue-700">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg text-blue-700 dark:text-blue-300">
                   <Layers size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Refine Sales Dataset Filters</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Refine dataset across product name, marketplace portal, item, size, and colour</p>
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Refine Sales Dataset Filters</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Refine dataset across product name, marketplace portal, item, size, colour, and date range</p>
                 </div>
               </div>
               
@@ -767,16 +811,16 @@ export default function App() {
                 <button
                   id="btn-toggle-filters-expanded"
                   onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-700 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   {isFiltersExpanded ? 'Hide Filter Controls' : 'Show Filter Controls'}
                 </button>
                 
-                {(selectedPortals.length > 0 || selectedProducts.length > 0 || selectedQualities.length > 0 || selectedSizes.length > 0 || selectedColours.length > 0) && (
+                {(selectedPortals.length > 0 || selectedProducts.length > 0 || selectedQualities.length > 0 || selectedSizes.length > 0 || selectedColours.length > 0 || startDate !== null || endDate !== null) && (
                   <button
                     id="btn-clear-filters-global"
                     onClick={clearAllFilters}
-                    className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold hover:bg-rose-100 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-lg text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     Clear Active Filters
                   </button>
@@ -786,7 +830,7 @@ export default function App() {
 
             {/* Filter Content */}
             {isFiltersExpanded && (
-              <div className="p-6 border-b border-slate-200/80 bg-slate-50/20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 relative z-30">
+              <div className="p-6 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/40 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-6 relative z-30">
                 
                 {/* 1. Simplified Product Name selection */}
                 <SearchableDropdown
@@ -837,6 +881,46 @@ export default function App() {
                   onChange={setSelectedColours}
                   placeholder="All Colours"
                 />
+
+                {/* 6. Start Date selection */}
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-mono">
+                    Start Date
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="filter-start-date"
+                      type="date"
+                      value={startDate || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? e.target.value : null;
+                        setStartDate(val);
+                        if (val) showToast(`📅 Filter start date: ${val}`);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* 7. End Date selection */}
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-mono">
+                    End Date
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="filter-end-date"
+                      type="date"
+                      value={endDate || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? e.target.value : null;
+                        setEndDate(val);
+                        if (val) showToast(`📅 Filter end date: ${val}`);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    />
+                  </div>
+                </div>
 
               </div>
             )}

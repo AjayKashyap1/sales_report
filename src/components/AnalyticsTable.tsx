@@ -155,28 +155,28 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
   };
 
   return (
-    <div id="analytics-table-section" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 space-y-5 shadow-sm">
+    <div id="analytics-table-section" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 space-y-5 shadow-sm">
       {/* Table Header Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wide">
             <BarChart3 size={18} className="text-blue-600" />
             Rolling Run Rates (Unit-Based 3M, 6M, 12M Averages)
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">Standardized monthly sales performance over rolling month blocks</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Standardized monthly sales performance over rolling month blocks</p>
         </div>
 
         {/* Filters and Metric Controls */}
         <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
           {/* Group Tab Switcher */}
-          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
             <button
               id="btn-tab-portal"
               onClick={() => { setActiveTab('PORTAL'); setSearchQuery(''); }}
               className={`px-3.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
                 activeTab === 'PORTAL'
-                  ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-600 shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               Marketplace Portal
@@ -186,8 +186,8 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
               onClick={() => { setActiveTab('PRODUCT'); setSearchQuery(''); }}
               className={`px-3.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
                 activeTab === 'PRODUCT'
-                  ? 'bg-white text-blue-600 border border-slate-200 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-600 shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               Column C (Simpiled)
@@ -195,20 +195,20 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
           </div>
 
           {/* Table Export Options */}
-          <div className="flex bg-white rounded-lg border border-blue-200 overflow-hidden shadow-2xs">
-            <span className="px-2.5 py-1.5 text-[10px] bg-blue-50 font-bold border-r border-blue-200 text-blue-700 uppercase font-mono flex items-center gap-1">
+          <div className="flex bg-white dark:bg-slate-850 rounded-lg border border-blue-200 dark:border-blue-900 overflow-hidden shadow-2xs">
+            <span className="px-2.5 py-1.5 text-[10px] bg-blue-50 dark:bg-blue-950/40 font-bold border-r border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 uppercase font-mono flex items-center gap-1">
               <ArrowDownToLine size={12} />
               Export
             </span>
             <button
               onClick={() => handleExport('CSV')}
-              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-700 transition-colors cursor-pointer"
             >
               CSV
             </button>
             <button
               onClick={() => handleExport('PDF')}
-              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
             >
               PDF
             </button>
@@ -217,10 +217,10 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
       </div>
 
       {/* Info panel explaining how averages are calculated */}
-      <div className="p-3.5 bg-blue-50/50 border border-blue-100 rounded-lg flex gap-2.5 items-start text-xs text-slate-600">
-        <Info size={14} className="text-blue-600 shrink-0 mt-0.5" />
+      <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/60 rounded-lg flex gap-2.5 items-start text-xs text-slate-600 dark:text-slate-400">
+        <Info size={14} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold text-slate-800">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total <strong>units sold</strong> inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
+          <span className="font-bold text-slate-800 dark:text-slate-200">Calculation logic:</span> The latest month in the dataset determines the anchor. Last 3M, 6M, and 12M averages represents total <strong>units sold</strong> inside those rolling month blocks divided by 3, 6, and 12 months respectively, giving the standardized monthly run rate.
         </div>
       </div>
 
@@ -235,17 +235,17 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
           placeholder={`Search ${activeTab === 'PORTAL' ? 'portals (e.g. Amazon)' : 'products (e.g. Earbuds)'}...`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
         />
       </div>
 
       {/* Responsive Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200">
+            <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
               <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-800 transition-colors"
+                className="p-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-800 dark:hover:text-slate-250 transition-colors"
                 onClick={() => requestSort('name')}
               >
                 <div className="flex items-center gap-1.5">
@@ -254,7 +254,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 </div>
               </th>
               <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 transition-colors"
+                className="p-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 dark:hover:text-slate-250 transition-colors"
                 onClick={() => requestSort('avg3Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
@@ -263,7 +263,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 </div>
               </th>
               <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 transition-colors"
+                className="p-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 dark:hover:text-slate-250 transition-colors"
                 onClick={() => requestSort('avg6Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
@@ -272,7 +272,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 </div>
               </th>
               <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 transition-colors"
+                className="p-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 dark:hover:text-slate-250 transition-colors"
                 onClick={() => requestSort('avg12Month')}
               >
                 <div className="flex items-center justify-end gap-1.5">
@@ -281,7 +281,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
                 </div>
               </th>
               <th 
-                className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 transition-colors"
+                className="p-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-800 dark:hover:text-slate-250 transition-colors"
                 onClick={() => requestSort('totalUnits')}
               >
                 <div className="flex items-center justify-end gap-1.5">
@@ -291,30 +291,30 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {processedData.length > 0 ? (
               processedData.map((row) => (
-                <tr key={row.name} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-3 text-xs font-semibold text-slate-800 font-sans">
+                <tr key={row.name} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="p-3 text-xs font-semibold text-slate-800 dark:text-slate-200 font-sans">
                     {row.name}
                   </td>
-                  <td className="p-3 text-xs font-bold text-right font-mono text-blue-600">
+                  <td className="p-3 text-xs font-bold text-right font-mono text-blue-600 dark:text-blue-400">
                     {formatNumber(row.avg3Month)}
                   </td>
-                  <td className="p-3 text-xs font-bold text-right font-mono text-emerald-700">
+                  <td className="p-3 text-xs font-bold text-right font-mono text-emerald-700 dark:text-emerald-400">
                     {formatNumber(row.avg6Month)}
                   </td>
-                  <td className="p-3 text-xs font-bold text-right font-mono text-amber-700">
+                  <td className="p-3 text-xs font-bold text-right font-mono text-amber-700 dark:text-amber-400">
                     {formatNumber(row.avg12Month)}
                   </td>
-                  <td className="p-3 text-xs text-slate-500 text-right font-mono">
+                  <td className="p-3 text-xs text-slate-500 dark:text-slate-400 text-right font-mono">
                     {row.totalUnits.toLocaleString('en-IN')} units
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-xs text-slate-400 font-medium">
+                <td colSpan={5} className="p-8 text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
                   No matching entries found for "{searchQuery}"
                 </td>
               </tr>

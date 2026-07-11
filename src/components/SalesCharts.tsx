@@ -123,43 +123,43 @@ export default function SalesCharts({ records }: SalesChartsProps) {
       {/* KPI Cards */}
       <div id="kpi-cards-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
-        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Units Sold</span>
-            <h4 className="text-2xl font-bold font-mono text-emerald-600 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
-            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Total Units Sold</span>
+            <h4 className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{totalUnits.toLocaleString('en-IN')}</h4>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
               Primary calculation metric
             </span>
           </div>
-          <div className="h-12 w-12 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+          <div className="h-12 w-12 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <ShoppingBag size={22} />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Monthly Units</span>
-            <h4 className="text-2xl font-bold font-mono text-blue-600 mt-1">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Average Monthly Units</span>
+            <h4 className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400 mt-1">
               {avgMonthlyUnits.toLocaleString('en-IN')}
             </h4>
-            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
               Run rate over active months
             </span>
           </div>
-          <div className="h-12 w-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+          <div className="h-12 w-12 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
             <TrendingUp size={22} />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Transaction Rows</span>
-            <h4 className="text-2xl font-bold font-mono text-slate-800 mt-1">{records.length.toLocaleString('en-IN')}</h4>
-            <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Total Transaction Rows</span>
+            <h4 className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-1">{records.length.toLocaleString('en-IN')}</h4>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-0.5 mt-1.5 uppercase tracking-wide">
               Logged transaction points
             </span>
           </div>
-          <div className="h-12 w-12 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+          <div className="h-12 w-12 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
             <Landmark size={22} />
           </div>
         </div>
@@ -169,12 +169,12 @@ export default function SalesCharts({ records }: SalesChartsProps) {
       <div id="charts-main-grid" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Trend Area Chart */}
-        <div id="trend-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-2 shadow-sm">
+        <div id="trend-chart-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 lg:col-span-2 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
               Monthly Units Sold Trend
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Timeline overview showing monthly performance fluctuations</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Timeline overview showing monthly performance fluctuations</p>
           </div>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -185,24 +185,24 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                     <stop offset="95%" stopColor={metricMode === 'UNITS' ? '#10b981' : '#2563eb'} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                 <XAxis 
                   dataKey="monthKey" 
-                  stroke="#64748b" 
+                  stroke="var(--chart-text)" 
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
                 />
                 <YAxis 
-                  stroke="#64748b" 
+                  stroke="var(--chart-text)" 
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
                   tickFormatter={metricMode === 'UNITS' ? (val) => val.toLocaleString('en-IN') : formatCurrency} 
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
-                  labelStyle={{ color: '#1e293b', fontWeight: 'bold', fontFamily: 'monospace' }}
+                  contentStyle={{ backgroundColor: 'var(--chart-bg)', borderColor: 'var(--chart-border)', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                  labelStyle={{ color: 'var(--chart-tooltip-label)', fontWeight: 'bold', fontFamily: 'monospace' }}
                   itemStyle={{ color: metricMode === 'UNITS' ? '#10b981' : '#2563eb', fontSize: '12px' }}
                   formatter={(value: any) => [
                     metricMode === 'UNITS' ? `${Number(value).toLocaleString('en-IN')} units` : `₹${Number(value).toLocaleString('en-IN')}`,
@@ -223,11 +223,11 @@ export default function SalesCharts({ records }: SalesChartsProps) {
         </div>
 
         {/* Portal breakdown */}
-        <div id="portal-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 shadow-sm flex flex-col justify-between">
+        <div id="portal-chart-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Portal Share Distribution</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Portal Share Distribution</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Marketplace portal contribution based on quantity
               </p>
             </div>
@@ -248,8 +248,8 @@ export default function SalesCharts({ records }: SalesChartsProps) {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
-                    itemStyle={{ fontSize: '11px', color: '#1e293b' }}
+                    contentStyle={{ backgroundColor: 'var(--chart-bg)', borderColor: 'var(--chart-border)', borderRadius: '8px' }}
+                    itemStyle={{ fontSize: '11px', color: 'var(--chart-tooltip-label)' }}
                     formatter={(value: any) => [
                       `${Number(value).toLocaleString('en-IN')} units`,
                       'Quantity'
@@ -259,8 +259,8 @@ export default function SalesCharts({ records }: SalesChartsProps) {
               </ResponsiveContainer>
               
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
-                <span className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Active channels</span>
-                <span className="text-sm font-bold text-slate-800 mt-0.5">{portalData.length} Portals</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">Active channels</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">{portalData.length} Portals</span>
               </div>
             </div>
           </div>
@@ -272,11 +272,11 @@ export default function SalesCharts({ records }: SalesChartsProps) {
               const percentage = totalVal > 0 ? ((entryVal / totalVal) * 100).toFixed(0) : '0';
               
               return (
-                <div key={entry.name} className="flex items-center gap-1.5 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
+                <div key={entry.name} className="flex items-center gap-1.5 p-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
                   <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                   <div className="overflow-hidden">
-                    <p className="text-[10px] font-bold text-slate-700 truncate">{entry.name}</p>
-                    <p className="text-[9px] font-mono text-slate-400 truncate mt-0.5">
+                    <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">{entry.name}</p>
+                    <p className="text-[9px] font-mono text-slate-400 dark:text-slate-500 truncate mt-0.5">
                       {percentage}% ({entry.units.toLocaleString('en-IN')} units)
                     </p>
                   </div>
@@ -287,39 +287,39 @@ export default function SalesCharts({ records }: SalesChartsProps) {
         </div>
 
         {/* Product Sales Bar Chart */}
-        <div id="product-chart-card" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 lg:col-span-3 shadow-sm">
+        <div id="product-chart-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 lg:col-span-3 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
               Product Performance (Units Sold Comparison)
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Top-performing products ordered by units sold</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Top-performing products ordered by units sold</p>
           </div>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={productData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                 <XAxis 
                   dataKey="name" 
-                  stroke="#64748b" 
+                  stroke="var(--chart-text)" 
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
                   tickFormatter={(name) => name.length > 15 ? `${name.substring(0, 15)}...` : name}
                 />
                 <YAxis 
-                  stroke="#64748b" 
+                  stroke="var(--chart-text)" 
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
                   tickFormatter={(val) => val.toLocaleString('en-IN')} 
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }}
-                  itemStyle={{ fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: 'var(--chart-bg)', borderColor: 'var(--chart-border)', borderRadius: '8px' }}
+                  itemStyle={{ fontSize: '11px', color: 'var(--chart-tooltip-label)' }}
                   formatter={(value: any) => [`${value.toLocaleString('en-IN')} units`, 'Units Sold']}
                 />
                 <Legend 
-                  wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: '#64748b' }}
+                  wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: 'var(--chart-text)' }}
                   formatter={() => 'Units Sold'}
                 />
                 <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
