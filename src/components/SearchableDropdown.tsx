@@ -80,7 +80,11 @@ export default function SearchableDropdown({
   }, [selectedValues, options, placeholder]);
 
   return (
-    <div id={`searchable-dropdown-${id}`} ref={containerRef} className="relative flex flex-col space-y-1.5 w-full">
+    <div 
+      id={`searchable-dropdown-${id}`} 
+      ref={containerRef} 
+      className={`relative flex flex-col space-y-1.5 w-full ${isOpen ? 'z-50' : 'z-20'}`}
+    >
       <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 block font-mono">
         {label}
       </span>

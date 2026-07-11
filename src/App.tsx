@@ -9,7 +9,8 @@ import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
 import WhatsAppExporter from './components/WhatsAppExporter';
 import SearchableDropdown from './components/SearchableDropdown';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar } from 'lucide-react';
+import AISalesAnalyst from './components/AISalesAnalyst';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar, Bot, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
@@ -17,7 +18,7 @@ export default function App() {
   const [thresholds, setThresholds] = useState<AlertThreshold[]>(initialThresholds);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER' | 'SYNC'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER' | 'SYNC' | 'AI_ANALYST'>('DASHBOARD');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Theme Switching state
@@ -369,7 +370,7 @@ export default function App() {
 
     setSystemAlerts(newAlerts);
     if (newAlerts.length > 0) {
-      showToast(`⚠️ ${newAlerts.length} threshold breach alerts triggered. Dispatching reports to ajay741900@gmail.com...`);
+      showToast(`⚠️ ${newAlerts.length} threshold breach alerts triggered. Dispatching telemetry reports...`);
     }
   }, [showToast]);
 
@@ -586,7 +587,7 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Insights Panel</h3>
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 font-mono font-bold">ajay741900@gmail.com</p>
+                  <p className="text-[9px] text-slate-400 dark:text-slate-500 font-mono font-bold">System Analytics Console</p>
                 </div>
               </div>
               
@@ -649,6 +650,25 @@ export default function App() {
               >
                 <Package size={16} />
                 <span>6-Month Stock Planner</span>
+              </button>
+
+              <button
+                id="sidebar-tab-ai-analyst"
+                onClick={() => {
+                  setActiveTab('AI_ANALYST');
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'AI_ANALYST'
+                    ? 'bg-gradient-to-r from-blue-700 to-indigo-600 text-white shadow-md'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-750'
+                }`}
+              >
+                <Bot size={16} className={activeTab === 'AI_ANALYST' ? 'text-white' : 'text-blue-500'} />
+                <span className="flex items-center gap-1.5">
+                  AI Sales Analyst
+                  <span className="px-1 py-0.2 text-[8px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded font-black font-mono">BETA</span>
+                </span>
               </button>
 
               <button
@@ -732,8 +752,8 @@ export default function App() {
             </button>
             
             <div className="text-right hidden md:block">
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono font-bold uppercase tracking-wider">Telemetry Owner</span>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">ajay741900@gmail.com</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono font-bold uppercase tracking-wider">Telemetry Channel</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">Executive Console</span>
             </div>
           </div>
         </div>
@@ -1022,6 +1042,24 @@ export default function App() {
                 No data matched selected filters. Adjust your filters or load data in the Sales Dashboard.
               </div>
             )}
+          </div>
+        )}
+
+        {/* 4. AI SALES ANALYST BOT */}
+        {activeTab === 'AI_ANALYST' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-lg shadow-2xs">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Cognitive Brain Center</span>
+              <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mt-1 uppercase tracking-wide">
+                <Sparkles size={18} className="text-blue-600 dark:text-blue-400" />
+                AI E-Commerce Assistant Bot
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                Connect your custom OpenRouter API Key to query sales reports, predict customer demands, analyze inventory stock levels, and generate customized marketing campaigns directly with our AI engine.
+              </p>
+            </div>
+
+            <AISalesAnalyst currentRole={currentRole} records={filteredRecords} />
           </div>
         )}
 
