@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AlertThreshold, SystemAlert, SalesRecord, UserRole } from '../types';
-import { Bell, ShieldCheck, Mail, AlertTriangle, ToggleLeft, ToggleRight, Trash2, Plus, BellRing, Settings, HelpCircle, Check } from 'lucide-react';
+import { Bell, ShieldCheck, Mail, AlertTriangle, ToggleLeft, ToggleRight, Trash2, Plus, BellRing, Settings, HelpCircle, Check, MessageSquare, Phone } from 'lucide-react';
 
 interface AlertManagerProps {
   currentRole: UserRole;
@@ -138,13 +138,13 @@ export default function AlertManager({
                       {alert.message}
                     </p>
                     
-                    {/* Security Integration Proof: Email Alert Sent tag */}
+                    {/* Security Integration Proof: WhatsApp Alert Sent tag */}
                     <div className="mt-3 flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/60">
                       <div className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                        <Check size={11} strokeWidth={2.5} /> Email Sent
+                        <MessageSquare size={11} strokeWidth={2.5} /> WhatsApp Sent
                       </div>
                       <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                        Dispatched to: <strong className="text-slate-700 dark:text-slate-300 font-mono">ajay741900@gmail.com</strong>
+                        Dispatched via: <strong className="text-slate-700 dark:text-slate-300 font-mono">Green API Gateway</strong>
                       </span>
                     </div>
                   </div>
@@ -164,13 +164,13 @@ export default function AlertManager({
           </div>
         </div>
 
-        {/* Email Policy Alert */}
+        {/* WhatsApp Policy Alert */}
         <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-850/50 border border-slate-100 dark:border-slate-800 rounded-lg flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-            <Mail size={15} />
+          <div className="h-8 w-8 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <MessageSquare size={15} />
           </div>
           <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
-            <span className="font-bold text-slate-700 dark:text-slate-300">Automated Mail Alerts Policy:</span> Whenever a threshold is breached, our server simulated mail loop sends a telemetry dispatch report directly to the system owner's registered address: <strong className="text-slate-700 dark:text-slate-300 font-mono font-bold">ajay741900@gmail.com</strong>.
+            <span className="font-bold text-slate-700 dark:text-slate-300">Automated WhatsApp Alerts Policy:</span> Whenever a threshold is breached, our background loop triggers a live WhatsApp telemetry notification directly to the system owner's registered number via Green API.
           </div>
         </div>
       </div>

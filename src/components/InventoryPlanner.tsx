@@ -515,19 +515,19 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
   };
 
   return (
-    <div id="inventory-planner-section" className="bg-white border border-slate-200 rounded-lg p-5 md:p-6 space-y-6 shadow-sm">
+    <div id="inventory-planner-section" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 md:p-6 space-y-6 shadow-sm">
       
       {/* SECTION HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 font-mono">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-450 font-mono">
             Forecasting & Replenishment
           </span>
-          <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
+          <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mt-1 uppercase tracking-wide">
             <Package size={20} className="text-emerald-600" />
             6-Month Stock Requirement Planner
           </h3>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
             This system calculates the <strong>Monthly Average Units sold over the past 3 months</strong> and projects the <strong>6-Month Projected Demand</strong>. Update current stock levels below to determine net requirements.
           </p>
         </div>
@@ -544,7 +544,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
               isCsvUploadOpen 
                 ? 'bg-emerald-800 border-emerald-900 text-white shadow-sm font-black' 
-                : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 font-extrabold'
+                : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 dark:text-emerald-400 font-extrabold dark:bg-emerald-950/20 dark:border-emerald-900'
             }`}
           >
             <Upload size={14} />
@@ -557,7 +557,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
               isBulkOpen 
                 ? 'bg-slate-800 border-slate-900 text-white shadow-sm' 
-                : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600'
+                : 'bg-slate-50 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 dark:bg-slate-850/40'
             }`}
           >
             <Clipboard size={14} />
@@ -565,8 +565,8 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           </button>
 
           {/* Table Export Options */}
-          <div className="flex bg-white rounded-lg border border-emerald-200 overflow-hidden shadow-2xs">
-            <span className="px-2.5 py-1.5 text-[10px] bg-emerald-50 font-bold border-r border-emerald-200 text-emerald-700 uppercase font-mono flex items-center gap-1">
+          <div className="flex bg-white dark:bg-slate-800 rounded-lg border border-emerald-200 dark:border-emerald-900 overflow-hidden shadow-2xs">
+            <span className="px-2.5 py-1.5 text-[10px] bg-emerald-50 dark:bg-emerald-950/40 font-bold border-r border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 uppercase font-mono flex items-center gap-1">
               <ArrowDownToLine size={12} />
               Export
             </span>
@@ -574,7 +574,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               id="btn-export-forecast-csv"
               onClick={() => handleExport('CSV')}
               disabled={productCalculations.length === 0}
-              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-emerald-700 border-r border-slate-150 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-[10px] font-bold text-emerald-700 dark:text-emerald-450 border-r border-slate-150 dark:border-slate-700 transition-colors cursor-pointer disabled:opacity-50"
             >
               CSV
             </button>
@@ -582,7 +582,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               id="btn-export-forecast-pdf"
               onClick={() => handleExport('PDF')}
               disabled={productCalculations.length === 0}
-              className="px-3 py-1.5 hover:bg-slate-50 text-[10px] font-bold text-emerald-700 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-[10px] font-bold text-emerald-700 dark:text-emerald-450 transition-colors cursor-pointer disabled:opacity-50"
             >
               PDF
             </button>
@@ -593,28 +593,28 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
       {/* KPI METRICS INSIDE INVENTORY PLANNER */}
       <div id="planner-kpis-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-2xs">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total 6-Month Demand</span>
-          <h5 className="text-xl font-bold font-mono text-slate-800 mt-1">{plannerStats.total6MDemand.toLocaleString('en-IN')} <span className="text-xs font-medium text-slate-400">units</span></h5>
-          <span className="text-[9px] text-slate-400 font-medium block mt-1.5 uppercase">Estimated units to be sold</span>
+        <div className="p-4 bg-slate-50 dark:bg-slate-850/40 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xs">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block">Total 6-Month Demand</span>
+          <h5 className="text-xl font-bold font-mono text-slate-800 dark:text-slate-100 mt-1">{plannerStats.total6MDemand.toLocaleString('en-IN')} <span className="text-xs font-medium text-slate-400 dark:text-slate-500">units</span></h5>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium block mt-1.5 uppercase">Estimated units to be sold</span>
         </div>
 
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-2xs">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Current Stock Available</span>
-          <h5 className="text-xl font-bold font-mono text-slate-800 mt-1">{plannerStats.totalCurrentStock.toLocaleString('en-IN')} <span className="text-xs font-medium text-slate-400">units</span></h5>
-          <span className="text-[9px] text-slate-400 font-medium block mt-1.5 uppercase">Your aggregate inventory on hand</span>
+        <div className="p-4 bg-slate-50 dark:bg-slate-850/40 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xs">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block">Current Stock Available</span>
+          <h5 className="text-xl font-bold font-mono text-slate-800 dark:text-slate-100 mt-1">{plannerStats.totalCurrentStock.toLocaleString('en-IN')} <span className="text-xs font-medium text-slate-400 dark:text-slate-500">units</span></h5>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium block mt-1.5 uppercase">Your aggregate inventory on hand</span>
         </div>
 
-        <div className="p-4 bg-rose-50/50 border border-rose-100 rounded-lg shadow-2xs">
-          <span className="text-[10px] text-rose-600 font-bold uppercase tracking-wider block">Total Net Stock Required</span>
-          <h5 className="text-xl font-bold font-mono text-rose-700 mt-1">{plannerStats.totalShortfall.toLocaleString('en-IN')} <span className="text-xs font-medium text-rose-500">units</span></h5>
-          <span className="text-[9px] text-rose-500 font-bold block mt-1.5 uppercase">Shortfall to purchase immediately</span>
+        <div className="p-4 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-950 rounded-lg shadow-2xs">
+          <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider block">Total Net Stock Required</span>
+          <h5 className="text-xl font-bold font-mono text-rose-700 dark:text-rose-450 mt-1">{plannerStats.totalShortfall.toLocaleString('en-IN')} <span className="text-xs font-medium text-rose-500 dark:text-rose-400">units</span></h5>
+          <span className="text-[9px] text-rose-500 dark:text-rose-400 font-bold block mt-1.5 uppercase">Shortfall to purchase immediately</span>
         </div>
 
-        <div className="p-4 bg-amber-50/50 border border-amber-100 rounded-lg shadow-2xs">
-          <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">Critical & Low Stock</span>
-          <h5 className="text-xl font-bold font-mono text-amber-800 mt-1">{plannerStats.underStockedCount} <span className="text-xs font-medium text-amber-600">products</span></h5>
-          <span className="text-[9px] text-amber-600 font-bold block mt-1.5 uppercase">
+        <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-950 rounded-lg shadow-2xs">
+          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider block">Critical & Low Stock</span>
+          <h5 className="text-xl font-bold font-mono text-amber-800 dark:text-amber-400 mt-1">{plannerStats.underStockedCount} <span className="text-xs font-medium text-amber-600 dark:text-amber-500">products</span></h5>
+          <span className="text-[9px] text-amber-600 dark:text-amber-500 font-bold block mt-1.5 uppercase">
             {plannerStats.criticalStockouts} out of stock (0 inventory)
           </span>
         </div>
@@ -623,16 +623,16 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
 
       {/* BULK TEXTAREA COPY-PASTER */}
       {isBulkOpen && (
-        <div id="bulk-inventory-importer-box" className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4 animate-in fade-in slide-in-from-top-3 duration-200">
-          <div className="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-md border border-slate-200">
+        <div id="bulk-inventory-importer-box" className="p-4 bg-slate-50 dark:bg-slate-850/40 border border-slate-200 dark:border-slate-800 rounded-lg space-y-4 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-900 p-3 rounded-md border border-slate-200 dark:border-slate-850">
             <HelpCircle size={16} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800">Bulk Paste Guide:</p>
-              <p className="mt-1">
+              <p className="font-bold text-slate-800 dark:text-slate-100">Bulk Paste Guide:</p>
+              <p className="mt-1 text-slate-500 dark:text-slate-400">
                 You can directly copy and paste two columns (Product Name, Current Inventory) from Excel or Google Sheets.
                 Each product should be on a new line. For example:
               </p>
-              <pre className="mt-2 p-1.5 bg-slate-50 font-mono text-[10px] text-slate-500 rounded border border-slate-150 inline-block">
+              <pre className="mt-2 p-1.5 bg-slate-50 dark:bg-slate-950/50 font-mono text-[10px] text-slate-500 dark:text-slate-400 rounded border border-slate-150 dark:border-slate-800 inline-block">
                 Wireless Pro Earbuds, 120{"\n"}
                 Fitband Pulse Smartwatch, 45{"\n"}
                 Ergonomic Office Chair, 12
@@ -641,7 +641,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Paste Product Inventory Lines:</label>
+            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Paste Product Inventory Lines:</label>
             <textarea
               id="textarea-bulk-inventory"
               rows={4}

@@ -7,7 +7,7 @@ import SalesCharts from './components/SalesCharts';
 import AnalyticsTable from './components/AnalyticsTable';
 import InventoryPlanner from './components/InventoryPlanner';
 import AlertManager from './components/AlertManager';
-import EmailExporter from './components/EmailExporter';
+import WhatsAppExporter from './components/WhatsAppExporter';
 import SearchableDropdown from './components/SearchableDropdown';
 import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar } from 'lucide-react';
 
@@ -794,7 +794,7 @@ export default function App() {
 
         {/* CONTROL CENTER */}
         {activeTab !== 'SYNC' && records.length > 0 && (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-visible">
             {/* Control Header */}
             <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -932,13 +932,13 @@ export default function App() {
         {/* 0. GOOGLE SHEETS & CSV SYNC */}
         {activeTab === 'SYNC' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Data Integration Hub</span>
-              <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Data Integration Hub</span>
+              <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mt-1 uppercase tracking-wide">
                 <RefreshCw size={18} className="text-blue-600" />
                 Sheet Sync & Data Upload Configuration
               </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                 Connect your live e-commerce Google Sheet for automatic, real-time sync, or drag and drop offline sales data reports in CSV format. All updates propagate instantly across all analytics tables and inventory planners.
               </p>
             </div>
@@ -961,7 +961,7 @@ export default function App() {
             {filteredRecords.length > 0 ? (
               <SalesCharts records={filteredRecords} />
             ) : (
-              <div className="p-8 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+              <div className="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
                 Please refine dataset filters or load sales data to view trend charts.
               </div>
             )}
@@ -978,9 +978,9 @@ export default function App() {
               onClearAlerts={handleClearAlerts}
             />
 
-            {/* SECURE TELEMETRY EMAIL EXPORTER */}
+            {/* SECURE TELEMETRY WHATSAPP EXPORTER */}
             {filteredRecords.length > 0 && (
-              <EmailExporter 
+              <WhatsAppExporter 
                 currentRole={currentRole}
                 records={filteredRecords}
               />
@@ -991,13 +991,13 @@ export default function App() {
         {/* 2. ROLLING RUN RATES */}
         {activeTab === 'RUN_RATE' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white border border-slate-200 p-5 rounded-lg shadow-2xs">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 font-mono">Statistical Run Rates</span>
-              <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mt-1 uppercase tracking-wide">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-lg shadow-2xs">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Statistical Run Rates</span>
+              <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mt-1 uppercase tracking-wide">
                 <BarChart3 size={18} className="text-blue-600" />
                 Rolling Run Rate Performance
               </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                 This section presents a detailed breakdown of average sales for products and sales channels over periods of 3 months (3M), 6 months (6M), and 12 months (12M) to help you understand trends and demand patterns.
               </p>
             </div>
@@ -1005,7 +1005,7 @@ export default function App() {
             {filteredRecords.length > 0 ? (
               <AnalyticsTable records={filteredRecords} />
             ) : (
-              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+              <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
                 No data matched selected filters. Adjust your filters or load data in the Sales Dashboard.
               </div>
             )}
@@ -1018,7 +1018,7 @@ export default function App() {
             {filteredRecords.length > 0 ? (
               <InventoryPlanner records={filteredRecords} />
             ) : (
-              <div className="p-12 text-center bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium font-sans">
+              <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
                 No data matched selected filters. Adjust your filters or load data in the Sales Dashboard.
               </div>
             )}
