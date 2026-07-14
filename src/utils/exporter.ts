@@ -125,9 +125,10 @@ export function exportRunRateToPDF(rows: any[], segmentType: 'PORTAL' | 'PRODUCT
 
 // 5. Export Stock Planner Table to CSV
 export function exportStockPlannerToCSV(rows: any[], filename: string = 'stock_planner.csv') {
-  const headers = ['Product Name', '3M Run Rate Units', '6-Month Demand Projection', 'Current Stock Qty', 'Net Requirement Units', 'Status'];
+  const headers = ['Product Name', 'Product Photo', '3M Run Rate Units', '6-Month Demand Projection', 'Current Stock Qty', 'Net Requirement Units', 'Status'];
   const dataRows = rows.map(r => [
     r.productName,
+    r.imageLink || '',
     r.runRate,
     r.projectedDemand,
     r.currentStock,
@@ -149,9 +150,10 @@ export function exportStockPlannerToPDF(rows: any[], filename: string = 'stock_p
   doc.setFontSize(9);
   doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
   
-  const headers = [['Product Name', '3M Run Rate', '6M Projected Demand', 'Current Stock', 'Net Req.', 'Status']];
+  const headers = [['Product Name', 'Product Photo', '3M Run Rate', '6M Projected Demand', 'Current Stock', 'Net Req.', 'Status']];
   const body = rows.map(r => [
     r.productName,
+    r.imageLink || 'N/A',
     `${r.runRate} units/mo`,
     `${r.projectedDemand} units`,
     `${r.currentStock} units`,
@@ -167,10 +169,10 @@ export function exportStockPlannerToPDF(rows: any[], filename: string = 'stock_p
     headStyles: { fillColor: [37, 99, 235], fontSize: 9 },
     bodyStyles: { fontSize: 8.5 },
     columnStyles: { 
-      1: { halign: 'right' },
       2: { halign: 'right' },
       3: { halign: 'right' },
-      4: { halign: 'right' }
+      4: { halign: 'right' },
+      5: { halign: 'right' }
     }
   });
   

@@ -3,14 +3,13 @@ import { SalesRecord, UserRole, AlertThreshold, SystemAlert, GoogleSheetConfig }
 import { generateDemoData, initialThresholds } from './utils/demoData';
 import { parseCSVText } from './utils/csvParser';
 import CSVImport from './components/CSVImport';
-import SalesCharts from './components/SalesCharts';
 import AnalyticsTable from './components/AnalyticsTable';
 import InventoryPlanner from './components/InventoryPlanner';
-import AlertManager from './components/AlertManager';
-import WhatsAppExporter from './components/WhatsAppExporter';
 import SearchableDropdown from './components/SearchableDropdown';
 import AISalesAnalyst from './components/AISalesAnalyst';
-import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar, Bot, Sparkles } from 'lucide-react';
+import RoleSelector from './components/RoleSelector';
+import NotificationIntegrations from './components/NotificationIntegrations';
+import { BarChart3, Bell, TrendingUp, Mail, AlertTriangle, CloudRain, RotateCw, RefreshCw, Layers, Package, FileSpreadsheet, MoreVertical, Menu, X, Sun, Moon, Calendar, Bot, Sparkles, ChevronDown, Settings } from 'lucide-react';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('ADMIN');
@@ -18,25 +17,98 @@ export default function App() {
   const [thresholds, setThresholds] = useState<AlertThreshold[]>(initialThresholds);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'RUN_RATE' | 'STOCK_PLANNER' | 'SYNC' | 'AI_ANALYST'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'RUN_RATE' | 'STOCK_PLANNER' | 'INTEGRATIONS' | 'AI_ANALYST'>('RUN_RATE');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // Theme Switching state
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'dark' || saved === 'light') return saved;
-    return 'light';
+  // Theme Switching state - Locked to light mode by user request
+  const theme = 'light';
+
+  // Dynamic color presets for Accent Theme options
+  const [accentTheme, setAccentTheme] = useState<'blue' | 'emerald' | 'purple' | 'rose' | 'amber' | 'cyan'>(() => {
+    const saved = localStorage.getItem('accent_theme');
+    if (saved === 'blue' || saved === 'emerald' || saved === 'purple' || saved === 'rose' || saved === 'amber' || saved === 'cyan') {
+      return saved;
+    }
+    return 'blue';
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    root.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const colors = {
+      blue: {
+        '50': '#eff6ff',
+        '100': '#dbeafe',
+        '500': '#3b82f6',
+        '600': '#2563eb',
+        '700': '#1d4ed8',
+        '800': '#1e40af',
+        '900': '#1e3a8a',
+        '950': '#172554'
+      },
+      emerald: {
+        '50': '#f0fdf4',
+        '100': '#dcfce7',
+        '500': '#10b981',
+        '600': '#059669',
+        '700': '#047857',
+        '800': '#065f46',
+        '900': '#064e3b',
+        '950': '#022c22'
+      },
+      purple: {
+        '50': '#faf5ff',
+        '100': '#f3e8ff',
+        '500': '#a855f7',
+        '600': '#9333ea',
+        '700': '#7e22ce',
+        '800': '#6b21a8',
+        '900': '#581c87',
+        '950': '#3b0764'
+      },
+      rose: {
+        '50': '#fff1f2',
+        '100': '#ffe4e6',
+        '500': '#f43f5e',
+        '600': '#e11d48',
+        '700': '#be123c',
+        '800': '#9f1239',
+        '900': '#881337',
+        '950': '#4c0519'
+      },
+      amber: {
+        '50': '#fdfbeb',
+        '100': '#fef3c7',
+        '500': '#f59e0b',
+        '600': '#d97706',
+        '700': '#b45309',
+        '800': '#92400e',
+        '900': '#78350f',
+        '950': '#451a03'
+      },
+      cyan: {
+        '50': '#ecfeff',
+        '100': '#cffafe',
+        '500': '#06b6d4',
+        '600': '#0891b2',
+        '700': '#0e7490',
+        '800': '#155e75',
+        '900': '#164e63',
+        '950': '#083344'
+      }
+    };
+
+    const selectedColors = colors[accentTheme];
+    Object.entries(selectedColors).forEach(([shade, hex]) => {
+      root.style.setProperty(`--accent-${shade}`, hex as string);
+    });
+    localStorage.setItem('accent_theme', accentTheme);
+  }, [accentTheme]);
 
   // Advanced Multi-Select Filters States
   const [selectedPortals, setSelectedPortals] = useState<string[]>([]);
@@ -86,6 +158,59 @@ export default function App() {
       colours: Array.from(colours).filter(Boolean).sort()
     };
   }, [records]);
+
+  // Cross-Filtered options for each dropdown to enable true Cross Filtering
+  const crossFilterOptions = React.useMemo(() => {
+    const getFilteredRecordsExcluding = (excludeKey?: 'portal' | 'product' | 'quality' | 'size' | 'colour') => {
+      return records.filter(r => {
+        const matchesPortal = excludeKey === 'portal' || selectedPortals.length === 0 || selectedPortals.includes(r.portal);
+        const matchesProduct = excludeKey === 'product' || selectedProducts.length === 0 || selectedProducts.includes(r.product);
+        const matchesQuality = excludeKey === 'quality' || selectedQualities.length === 0 || (r.quality && selectedQualities.includes(r.quality));
+        const matchesSize = excludeKey === 'size' || selectedSizes.length === 0 || (r.size && selectedSizes.includes(r.size));
+        const matchesColour = excludeKey === 'colour' || selectedColours.length === 0 || (r.colour && selectedColours.includes(r.colour));
+        
+        let matchesDate = true;
+        if (startDate) {
+          const sDate = new Date(startDate);
+          sDate.setHours(0, 0, 0, 0);
+          matchesDate = matchesDate && r.date >= sDate;
+        }
+        if (endDate) {
+          const eDate = new Date(endDate);
+          eDate.setHours(23, 59, 59, 999);
+          matchesDate = matchesDate && r.date <= eDate;
+        }
+
+        return matchesPortal && matchesProduct && matchesQuality && matchesSize && matchesColour && matchesDate;
+      });
+    };
+
+    const portalRecords = getFilteredRecordsExcluding('portal');
+    const productRecords = getFilteredRecordsExcluding('product');
+    const qualityRecords = getFilteredRecordsExcluding('quality');
+    const sizeRecords = getFilteredRecordsExcluding('size');
+    const colourRecords = getFilteredRecordsExcluding('colour');
+
+    const portals = new Set<string>();
+    const products = new Set<string>();
+    const qualities = new Set<string>();
+    const sizes = new Set<string>();
+    const colours = new Set<string>();
+
+    portalRecords.forEach(r => r.portal && portals.add(r.portal));
+    productRecords.forEach(r => r.product && products.add(r.product));
+    qualityRecords.forEach(r => r.quality && qualities.add(r.quality));
+    sizeRecords.forEach(r => r.size && sizes.add(r.size));
+    colourRecords.forEach(r => r.colour && colours.add(r.colour));
+
+    return {
+      portals: Array.from(portals).filter(Boolean).sort(),
+      products: Array.from(products).filter(Boolean).sort(),
+      qualities: Array.from(qualities).filter(Boolean).sort(),
+      sizes: Array.from(sizes).filter(Boolean).sort(),
+      colours: Array.from(colours).filter(Boolean).sort()
+    };
+  }, [records, selectedPortals, selectedProducts, selectedQualities, selectedSizes, selectedColours, startDate, endDate]);
 
   // Apply filters to records
   const filteredRecords = React.useMemo(() => {
@@ -604,22 +729,7 @@ export default function App() {
             <div className="space-y-1.5">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono block mb-2.5 px-2">Workspace Pages</span>
               
-              <button
-                id="sidebar-tab-dashboard"
-                onClick={() => {
-                  setActiveTab('DASHBOARD');
-                  setIsSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'DASHBOARD'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                }`}
-              >
-                <TrendingUp size={16} />
-                <span>Sales Dashboard & Trends</span>
-              </button>
-              
+
               <button
                 id="sidebar-tab-run-rate"
                 onClick={() => {
@@ -649,7 +759,7 @@ export default function App() {
                 }`}
               >
                 <Package size={16} />
-                <span>6-Month Stock Planner</span>
+                <span>Stock Requirement Planner</span>
               </button>
 
               <button
@@ -672,19 +782,19 @@ export default function App() {
               </button>
 
               <button
-                id="sidebar-tab-sync"
+                id="sidebar-tab-integrations"
                 onClick={() => {
-                  setActiveTab('SYNC');
+                  setActiveTab('INTEGRATIONS');
                   setIsSidebarOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'SYNC'
+                  activeTab === 'INTEGRATIONS'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
-                <RefreshCw size={16} />
-                <span>Google Sheets & CSV Sync</span>
+                <Settings size={16} />
+                <span>Integrations & Setup</span>
               </button>
             </div>
 
@@ -710,110 +820,207 @@ export default function App() {
         </div>
       )}
 
-      {/* DASHBOARD NAVBAR */}
-      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+      {/* DASHBOARD NAVBAR - AMAZON WAREHOUSE ANALYTICS BLACK/DARK SLATE THEME */}
+      <header className="bg-[#131921] border-b border-[#232f3e] sticky top-0 z-40 shadow-md">
         <div className="max-w-full lg:px-12 px-4 md:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* 3-DOTS SIDEBAR TOGGLE BUTTON */}
             <button
               id="btn-toggle-sidebar"
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-150 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex items-center justify-center gap-1.5"
+              className="p-2 -ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus:outline-none cursor-pointer flex items-center justify-center"
               title="Open Workspace Menu"
             >
-              <MoreVertical size={20} className="text-blue-600 dark:text-blue-400" />
+              <MoreVertical size={20} className="text-[#ff9900]" />
             </button>
 
-            <div className="h-9 w-9 rounded-md bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-600/10">
-              <BarChart3 size={18} />
-            </div>
-            <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 font-sans">E-Commerce Sales Insights</h1>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono uppercase tracking-wider font-bold">Live Sync & Multi-Marketplace Dashboard</p>
+            {/* Custom Logo & Title representing the screenshot perfectly */}
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-md bg-[#ff9900] flex items-center justify-center text-[#131921] shadow-lg">
+                <Layers size={18} />
+              </div>
+              <div>
+                <h1 className="text-sm font-black tracking-tight text-white font-sans flex items-center gap-1.5 leading-tight">
+                  Sales Dashboard
+                </h1>
+                <p className="text-[10px] text-[#ff9900] font-mono uppercase tracking-widest font-black block leading-none mt-0.5">
+                  ANALYTICS DASHBOARD
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {sheetConfig.isEnabled && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 font-mono">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Google Sync Active
-              </span>
-            )}
-
-            {/* THEME TOGGLE SWITCHER */}
-            <button
-              id="btn-theme-toggle"
-              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center justify-center"
-              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            >
-              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-            
-            <div className="text-right hidden md:block">
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono font-bold uppercase tracking-wider">Telemetry Channel</span>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">Executive Console</span>
+          {/* Right hand buttons exactly styled like the screenshot options */}
+          <div className="flex items-center gap-3">
+            {/* Green and Red sheet indicators in a compact capsule */}
+            <div className="hidden md:flex bg-slate-950 border border-slate-750 p-1 rounded-lg items-center gap-1 shrink-0">
+              <div className="h-6 w-6 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center" title="CSV Data Connected">
+                <FileSpreadsheet size={13} />
+              </div>
+              <div className="h-6 w-6 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center" title="Alert Dispatched Reports">
+                <AlertTriangle size={13} />
+              </div>
             </div>
+
+            {/* Sync Sheet button */}
+            <button
+              id="btn-header-sync-sheet"
+              onClick={async () => {
+                await fetchGoogleSheetData(sheetConfig.url);
+                showToast("🔄 Google Sheet synchronizing... Refreshing data channels.");
+              }}
+              className="hidden lg:flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-black transition-all cursor-pointer shadow-sm"
+            >
+              <RefreshCw size={13} className="text-[#ff9900]" />
+              <span>Sync Sheet</span>
+            </button>
+
+            {/* Connect Sheet button */}
+            <button
+              id="btn-header-connect-sheet"
+              onClick={() => {
+                setActiveTab('INTEGRATIONS');
+                showToast("🔗 Navigate to Integrations page. Paste spreadsheet URL to connect.");
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-black transition-all cursor-pointer shadow-sm"
+            >
+              <Layers size={13} className="text-[#ff9900]" />
+              <span>Connect Sheet</span>
+            </button>
+
+            {/* Template button */}
+            <a
+              id="btn-header-template"
+              href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQaZ6A9O82NanD3WNLDnSOb2FIpNVPFnef3RN_DoeudGep31MAL6CQE5sUlbIDe-U7nxVBX0z2TVThw/pub?gid=1397264212&single=true&output=csv"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden lg:flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-black transition-all cursor-pointer shadow-sm"
+            >
+              <FileSpreadsheet size={13} className="text-slate-400" />
+              <span>Template</span>
+            </a>
+
+            {/* Upload CSV button - Orange highlight exactly as requested */}
+            <button
+              id="btn-header-upload-csv"
+              onClick={() => {
+                setActiveTab('INTEGRATIONS');
+                showToast("📥 Ready for file import: Drop custom CSV in Integrations.");
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#ff9900] hover:bg-[#ffaa00] active:bg-[#e68a00] text-slate-950 text-xs font-black transition-all cursor-pointer shadow-md select-none transform hover:scale-[1.02]"
+            >
+              <RefreshCw size={13} className="text-slate-950 duration-3000 shrink-0" />
+              <span>Upload CSV</span>
+            </button>
+
+
           </div>
         </div>
       </header>
 
+      {/* SUB-HEADER TAB NAVIGATION & DATE SELECTORS - SCREENSHOT RECONSTRUCTION */}
+      <div className="bg-slate-100 dark:bg-[#11161d] border-b border-slate-200 dark:border-slate-800 px-4 lg:px-12 py-1 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 sticky top-16 z-30 shadow-xs">
+        {/* Navigation tabs left side */}
+        <div className="flex items-center overflow-x-auto scrollbar-none gap-1 py-1 md:py-0">
+          {[
+            { id: 'RUN_RATE', label: 'WAREHOUSE PERFORMANCE' },
+            { id: 'STOCK_PLANNER', label: 'STOCK REQUIREMENT PLANNER' },
+            { id: 'AI_ANALYST', label: 'AI SALES ANALYST' },
+            { id: 'INTEGRATIONS', label: 'INTEGRATIONS' },
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  showToast(`📂 Opened page view: ${tab.label}`);
+                }}
+                className={`px-4 py-3 text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer shrink-0 border-b-2 font-sans relative ${
+                  isActive
+                    ? 'border-[#ff9900] text-[#ff9900] dark:text-amber-400 font-extrabold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Date Filters right side with styled custom formatting */}
+        <div className="flex flex-wrap items-center gap-2 pb-2 md:pb-0">
+          {/* Custom Range select menu */}
+          <div className="relative">
+            <select
+              id="header-range-selector"
+              onChange={(e) => {
+                const choice = e.target.value;
+                if (choice === 'ALL') {
+                  setStartDate(null);
+                  setEndDate(null);
+                  showToast("📅 Filter reset: Displaying all-time reports.");
+                } else if (choice === 'LAST30') {
+                  // Set range relative to max date
+                  const maxD = records.length > 0 ? new Date(Math.max(...records.map(r => r.date.getTime()))) : new Date();
+                  const startD = new Date(maxD.getTime() - 30 * 24 * 60 * 60 * 1000);
+                  setStartDate(startD.toISOString().split('T')[0]);
+                  setEndDate(maxD.toISOString().split('T')[0]);
+                  showToast("📅 Display range set: Last 30 days of data.");
+                }
+              }}
+              className="bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md text-[10px] font-black tracking-wider uppercase text-slate-600 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none focus:ring-1 focus:ring-[#ff9900] cursor-pointer appearance-none font-sans"
+            >
+              <option value="CUSTOM">CUSTOM RANGE</option>
+              <option value="LAST30">LAST 30 DAYS</option>
+              <option value="ALL">ALL DATA RANGE</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+              <ChevronDown size={11} />
+            </div>
+          </div>
+
+          {/* Start Date input */}
+          <div className="flex items-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md px-2.5 py-1 gap-2">
+            <Calendar size={11} className="text-[#ff9900]" />
+            <input
+              id="header-start-date"
+              type="date"
+              value={startDate || ''}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                setStartDate(val);
+                if (val) showToast(`📅 Filter start: ${val}`);
+              }}
+              className="bg-transparent text-[11px] font-bold text-slate-700 dark:text-[#ff9900] border-none outline-none p-0 cursor-pointer w-24 font-mono focus:text-[#ff9900]"
+              placeholder="Start Date"
+            />
+          </div>
+
+          {/* End Date input */}
+          <div className="flex items-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md px-2.5 py-1 gap-2">
+            <Calendar size={11} className="text-[#ff9900]" />
+            <input
+              id="header-end-date"
+              type="date"
+              value={endDate || ''}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                setEndDate(val);
+                if (val) showToast(`📅 Filter end: ${val}`);
+              }}
+              className="bg-transparent text-[11px] font-bold text-slate-700 dark:text-[#ff9900] border-none outline-none p-0 cursor-pointer w-24 font-mono focus:text-[#ff9900]"
+              placeholder="End Date"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* MAIN LAYOUT */}
       <main className="max-w-full lg:px-12 px-4 md:px-8 pt-8 space-y-8 relative z-10">
         
-        {/* WELCOME BANNER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm">
-          <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Financial Workspace</span>
-            <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight mt-1">Sales Report Dashboard</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl font-medium leading-relaxed">
-              Portal-wise (Amazon, Flipkart) and Product-wise performance logs with rolling averages, automatic real-time Google Sheets fetching, and threshold breach dispatches.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-mono shrink-0 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-150 dark:border-slate-700">
-            <Layers size={14} className="text-blue-600 dark:text-blue-400" />
-            <span className="font-bold">Time Anchor: 10 July 2026</span>
-          </div>
-        </div>
-
-        {/* WORKSPACE PAGE INDICATOR BAR */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-6 py-4 rounded-xl shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              {activeTab === 'DASHBOARD' && <TrendingUp size={20} />}
-              {activeTab === 'RUN_RATE' && <BarChart3 size={20} />}
-              {activeTab === 'STOCK_PLANNER' && <Package size={20} />}
-              {activeTab === 'SYNC' && <RefreshCw size={20} />}
-            </div>
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 font-sans">
-                {activeTab === 'DASHBOARD' && "Sales Dashboard, Trends & Alerts"}
-                {activeTab === 'RUN_RATE' && "Rolling Run Rates Analytics"}
-                {activeTab === 'STOCK_PLANNER' && "6-Month Stock Planner & Requirements"}
-                {activeTab === 'SYNC' && "Google Sheets & CSV Sync Configuration"}
-              </h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono tracking-wide uppercase font-bold mt-0.5">
-                {activeTab === 'DASHBOARD' && "Monitor marketplace trends, charts, and alert threshold breaches"}
-                {activeTab === 'RUN_RATE' && "Examine product-wise and portal-wise rolling averages (3M, 6M, 12M)"}
-                {activeTab === 'STOCK_PLANNER' && "Analyze forecasted demands, current stock levels, and shortfalls"}
-                {activeTab === 'SYNC' && "Configure real-time Google Spreadsheet sync or upload custom CSV reports"}
-              </p>
-            </div>
-          </div>
-          
-          <button
-            id="btn-trigger-sidebar-navigation"
-            onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-2xs"
-          >
-            <MoreVertical size={14} className="text-blue-600 dark:text-blue-400" />
-            <span>Switch Page / Menu</span>
-          </button>
-        </div>
-
         {/* CONTROL CENTER */}
-        {activeTab !== 'SYNC' && records.length > 0 && (
+        {activeTab !== 'INTEGRATIONS' && activeTab !== 'AI_ANALYST' && records.length > 0 && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-visible">
             {/* Control Header */}
             <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -823,7 +1030,7 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Refine Sales Dataset Filters</h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Refine dataset across product name, marketplace portal, item, size, colour, and date range</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Refine dataset across product name, marketplace portal, item, size, colour, and date range (Enabled with true relational Cross Filtering)</p>
                 </div>
               </div>
               
@@ -856,7 +1063,7 @@ export default function App() {
                 <SearchableDropdown
                   id="simplified"
                   label="Product Name"
-                  options={filterOptions.products}
+                  options={crossFilterOptions.products}
                   selectedValues={selectedProducts}
                   onChange={setSelectedProducts}
                   placeholder="All Products"
@@ -866,7 +1073,7 @@ export default function App() {
                 <SearchableDropdown
                   id="portal"
                   label="Portal Name"
-                  options={filterOptions.portals}
+                  options={crossFilterOptions.portals}
                   selectedValues={selectedPortals}
                   onChange={setSelectedPortals}
                   placeholder="All Portals"
@@ -876,7 +1083,7 @@ export default function App() {
                 <SearchableDropdown
                   id="quality"
                   label="Item"
-                  options={filterOptions.qualities}
+                  options={crossFilterOptions.qualities}
                   selectedValues={selectedQualities}
                   onChange={setSelectedQualities}
                   placeholder="All Items"
@@ -886,7 +1093,7 @@ export default function App() {
                 <SearchableDropdown
                   id="size"
                   label="Size"
-                  options={filterOptions.sizes}
+                  options={crossFilterOptions.sizes}
                   selectedValues={selectedSizes}
                   onChange={setSelectedSizes}
                   placeholder="All Sizes"
@@ -896,7 +1103,7 @@ export default function App() {
                 <SearchableDropdown
                   id="colour"
                   label="Colour"
-                  options={filterOptions.colours}
+                  options={crossFilterOptions.colours}
                   selectedValues={selectedColours}
                   onChange={setSelectedColours}
                   placeholder="All Colours"
@@ -949,17 +1156,17 @@ export default function App() {
 
         {/* TAB CONTENTS */}
         
-        {/* 0. GOOGLE SHEETS & CSV SYNC */}
-        {activeTab === 'SYNC' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
+        {/* 0. INTEGRATIONS & DISPATCH CONFIG */}
+        {activeTab === 'INTEGRATIONS' && (
+          <div className="space-y-8 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Data Integration Hub</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">Integrations Hub</span>
               <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mt-1 uppercase tracking-wide">
-                <RefreshCw size={18} className="text-blue-600" />
-                Sheet Sync & Data Upload Configuration
+                <Settings size={18} className="text-blue-600" />
+                System Integrations, Sheet Sync & Notifications
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                Connect your live e-commerce Google Sheet for automatic, real-time sync, or drag and drop offline sales data reports in CSV format. All updates propagate instantly across all analytics tables and inventory planners.
+                Connect your live e-commerce Google Sheet, upload data reports in CSV format, or set up real-time Email, Telegram, and WhatsApp alerts for immediate threshold breach and inventory shortfall dispatches.
               </p>
             </div>
 
@@ -971,40 +1178,8 @@ export default function App() {
               onFetchGoogleSheet={fetchGoogleSheetData}
               totalLoaded={records.length}
             />
-          </div>
-        )}
 
-        {/* 1. SALES DASHBOARD & TRENDS */}
-        {activeTab === 'DASHBOARD' && (
-          <div className="space-y-8 animate-in fade-in duration-200">
-            {/* RECHARTS DATA VISUALIZATION PANEL */}
-            {filteredRecords.length > 0 ? (
-              <SalesCharts records={filteredRecords} />
-            ) : (
-              <div className="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
-                Please refine dataset filters or load sales data to view trend charts.
-              </div>
-            )}
-
-            {/* SYSTEM THRESHOLDS GUARD & ALERT FEED */}
-            <AlertManager
-              currentRole={currentRole}
-              records={filteredRecords}
-              thresholds={thresholds}
-              onAddThreshold={handleAddThreshold}
-              onToggleThreshold={handleToggleThreshold}
-              onDeleteThreshold={handleDeleteThreshold}
-              systemAlerts={systemAlerts}
-              onClearAlerts={handleClearAlerts}
-            />
-
-            {/* SECURE TELEMETRY WHATSAPP EXPORTER */}
-            {filteredRecords.length > 0 && (
-              <WhatsAppExporter 
-                currentRole={currentRole}
-                records={filteredRecords}
-              />
-            )}
+            <NotificationIntegrations onShowToast={showToast} />
           </div>
         )}
 
@@ -1023,7 +1198,21 @@ export default function App() {
             </div>
             
             {filteredRecords.length > 0 ? (
-              <AnalyticsTable records={filteredRecords} />
+              <AnalyticsTable 
+                records={filteredRecords} 
+                onPortalClick={(portal) => {
+                  setSelectedPortals(prev => 
+                    prev.includes(portal) ? prev.filter(p => p !== portal) : [...prev, portal]
+                  );
+                  showToast(`🎯 Cross-filtered Portal: ${portal}`);
+                }}
+                onProductClick={(product) => {
+                  setSelectedProducts(prev => 
+                    prev.includes(product) ? prev.filter(p => p !== product) : [...prev, product]
+                  );
+                  showToast(`🎯 Cross-filtered Product: ${product}`);
+                }}
+              />
             ) : (
               <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
                 No data matched selected filters. Adjust your filters or load data in the Sales Dashboard.
@@ -1036,7 +1225,15 @@ export default function App() {
         {activeTab === 'STOCK_PLANNER' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {filteredRecords.length > 0 ? (
-              <InventoryPlanner records={filteredRecords} />
+              <InventoryPlanner 
+                records={filteredRecords} 
+                onProductClick={(product) => {
+                  setSelectedProducts(prev => 
+                    prev.includes(product) ? prev.filter(p => p !== product) : [...prev, product]
+                  );
+                  showToast(`🎯 Cross-filtered Product: ${product}`);
+                }}
+              />
             ) : (
               <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-400 dark:text-slate-500 font-medium font-sans">
                 No data matched selected filters. Adjust your filters or load data in the Sales Dashboard.

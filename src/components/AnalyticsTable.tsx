@@ -1,20 +1,25 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { SalesRecord, RollingAverageRow } from '../types';
-import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info, ShoppingBag, Landmark, ArrowDownToLine } from 'lucide-react';
+import { Search, ArrowUpDown, ShieldAlert, BarChart3, TrendingUp, Info, ShoppingBag, Landmark, ArrowDownToLine, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface AnalyticsTableProps {
   records: SalesRecord[];
+  onPortalClick?: (portal: string) => void;
+  onProductClick?: (product: string) => void;
 }
 
 type GroupSegment = 'PORTAL' | 'PRODUCT';
 
-export default function AnalyticsTable({ records }: AnalyticsTableProps) {
+export default function AnalyticsTable({ records, onPortalClick, onProductClick }: AnalyticsTableProps) {
   const [activeTab, setActiveTab] = useState<GroupSegment>('PORTAL');
   const [searchQuery, setSearchQuery] = useState('');
   const metricMode = 'UNITS';
   
   const [sortField, setSortField] = useState<keyof RollingAverageRow>('avg3Month');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Compute rolling averages based on latest record date
   const rollingAverages = useMemo(() => {
@@ -112,6 +117,19 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
 
     return filtered;
   }, [rollingAverages, searchQuery, sortField, sortDirection]);
+
+  // Paginated Data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return processedData.slice(startIndex, startIndex + itemsPerPage);
+  }, [processedData, currentPage]);
+
+  const totalPages = Math.ceil(processedData.length / itemsPerPage);
+
+  // Reset page on filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab]);
 
   // Handle Header Sort Click
   const requestSort = (field: keyof RollingAverageRow) => {
@@ -234,7 +252,7 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
           type="text"
           placeholder={`Search ${activeTab === 'PORTAL' ? 'portals (e.g. Amazon)' : 'products (e.g. Earbuds)'}...`}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
           className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
         />
       </div>
@@ -292,11 +310,21 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {processedData.length > 0 ? (
-              processedData.map((row) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((row) => (
                 <tr key={row.name} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="p-3 text-xs font-semibold text-slate-800 dark:text-slate-200 font-sans">
-                    {row.name}
+                    <button
+                      type="button"
+                      onClick={() => activeTab === 'PORTAL' ? onPortalClick?.(row.name) : onProductClick?.(row.name)}
+                      className="inline-flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-[#ff9900] transition-colors duration-150 cursor-pointer text-left focus:outline-none"
+                      title={`Click to filter by ${activeTab === 'PORTAL' ? 'portal' : 'product'}: ${row.name}`}
+                    >
+                      <span>{row.name}</span>
+                      <span className="text-[8px] font-extrabold uppercase font-mono tracking-wider px-1 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-[#ff9900] border border-blue-100 dark:border-slate-700 rounded transition-colors shrink-0">
+                        Filter
+                      </span>
+                    </button>
                   </td>
                   <td className="p-3 text-xs font-bold text-right font-mono text-blue-600 dark:text-blue-400">
                     {formatNumber(row.avg3Month)}
@@ -322,6 +350,41 @@ export default function AnalyticsTable({ records }: AnalyticsTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {processedData.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <div>
+            Showing <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(processedData.length, (currentPage - 1) * itemsPerPage + 1)}</strong> to{' '}
+            <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(processedData.length, currentPage * itemsPerPage)}</strong> of{' '}
+            <strong className="font-mono text-slate-800 dark:text-slate-200">{processedData.length}</strong> entries
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              id="btn-analytics-prev"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            <span className="font-mono px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-bold">
+              Page {currentPage} of {totalPages || 1}
+            </span>
+
+            <button
+              id="btn-analytics-next"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage >= totalPages}
+              className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,10 +5,9 @@ import { Shield, User, ChevronDown, Check, AlertCircle } from 'lucide-react';
 interface RoleSelectorProps {
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
-  userEmail: string;
 }
 
-export default function RoleSelector({ currentRole, onRoleChange, userEmail }: RoleSelectorProps) {
+export default function RoleSelector({ currentRole, onRoleChange }: RoleSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const rolesConfig: Record<UserRole, { label: string; color: string; desc: string; permissions: string[] }> = {
@@ -42,7 +41,7 @@ export default function RoleSelector({ currentRole, onRoleChange, userEmail }: R
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-800 font-mono">{userEmail}</span>
+            <span className="text-sm font-semibold text-slate-850 dark:text-slate-100 font-sans">Active Session:</span>
             <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full border ${selectedConfig.color}`}>
               {currentRole}
             </span>

@@ -110,13 +110,13 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
   const getPortalBadgeStyles = (portal: string) => {
     const p = portal.toLowerCase();
     if (p.includes('amazon')) {
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/50';
     } else if (p.includes('flipkart')) {
-      return 'bg-blue-50 text-blue-800 border-blue-200';
+      return 'bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-900/50';
     } else if (p.includes('meesho')) {
-      return 'bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200';
+      return 'bg-fuchsia-50 dark:bg-fuchsia-950/30 text-fuchsia-800 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-900/50';
     }
-    return 'bg-slate-50 text-slate-700 border-slate-200';
+    return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
   };
 
   return (
@@ -125,54 +125,54 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
       {/* 1. REPORT STATS OVERVIEW HEADER (BENTO GRID STYLE) */}
       <div id="report-bento-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Total Units</span>
-            <h4 className="text-2xl font-black text-slate-800 font-mono">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-mono">Total Units</span>
+            <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono">
               {reportStats.totalQty.toLocaleString('en-IN')}
-              <span className="text-xs font-semibold text-slate-400 ml-1">pcs</span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">pcs</span>
             </h4>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+          <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60">
             <ShoppingBag size={18} />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Loaded Rows</span>
-            <h4 className="text-2xl font-black text-slate-800 font-mono">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-mono">Loaded Rows</span>
+            <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono">
               {reportStats.totalRows.toLocaleString('en-IN')}
-              <span className="text-xs font-semibold text-slate-400 ml-1">items</span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">items</span>
             </h4>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+          <div className="h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/60">
             <Layers size={18} />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Unique Products</span>
-            <h4 className="text-2xl font-black text-slate-800 font-mono">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-mono">Unique Products</span>
+            <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono">
               {reportStats.uniqueProducts}
-              <span className="text-xs font-semibold text-slate-400 ml-1">skus</span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">skus</span>
             </h4>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
+          <div className="h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/60">
             <Tag size={18} />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">Active Portals</span>
-            <h4 className="text-2xl font-black text-slate-800 font-mono">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-mono">Active Portals</span>
+            <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono">
               {reportStats.uniquePortals}
-              <span className="text-xs font-semibold text-slate-400 ml-1">channels</span>
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">channels</span>
             </h4>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+          <div className="h-10 w-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/60">
             <FolderTree size={18} />
           </div>
         </div>
@@ -180,11 +180,11 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
       </div>
 
       {/* 2. MAIN DETAILED REPORT CONTROLLER BAR */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 md:p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Search */}
         <div className="relative w-full md:max-w-md">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500 pointer-events-none">
             <Search size={14} />
           </span>
           <input
@@ -193,7 +193,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
             placeholder="Search report by Product Name, Portal Name, Item, Size..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-250 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-slate-100/50 focus:bg-white dark:bg-slate-800 dark:hover:bg-slate-750 focus:dark:bg-slate-900 border border-slate-250 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-colors"
           />
         </div>
 
@@ -201,12 +201,12 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
         <div className="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto">
           
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-semibold font-mono">Rows per page:</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold font-mono">Rows per page:</span>
             <select
               id="report-rows-select"
               value={itemsPerPage}
               onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="bg-white border border-slate-250 rounded-lg text-xs text-slate-700 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/10"
+              className="bg-white dark:bg-slate-800 border border-slate-250 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500/10"
             >
               <option value={10}>10 rows</option>
               <option value={15}>15 rows</option>
@@ -216,19 +216,19 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
             </select>
           </div>
 
-          <div className="flex bg-white rounded-lg border border-slate-255 overflow-hidden shadow-2xs">
-            <span className="px-2.5 py-1.5 text-[10px] bg-slate-50 font-bold border-r border-slate-200 text-slate-500 uppercase font-mono flex items-center gap-1">
+          <div className="flex bg-white dark:bg-slate-850 rounded-lg border border-slate-250 dark:border-slate-700 overflow-hidden shadow-2xs">
+            <span className="px-2.5 py-1.5 text-[10px] bg-slate-50 dark:bg-slate-900 font-bold border-r border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase font-mono flex items-center gap-1">
               <Download size={11} /> Export
             </span>
             <button
               onClick={() => exportRecordsToCSV(sortedData, 'detailed_sales_report.csv')}
-              className="px-3 py-1.5 hover:bg-slate-50 text-xs font-bold text-slate-700 border-r border-slate-150 transition-colors cursor-pointer"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 border-r border-slate-150 dark:border-slate-700 transition-colors cursor-pointer"
             >
               CSV
             </button>
             <button
               onClick={() => exportRecordsToPDF(sortedData, 'detailed_sales_report.pdf')}
-              className="px-3 py-1.5 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
             >
               PDF
             </button>
@@ -239,13 +239,13 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
       </div>
 
       {/* 3. THE 8-COLUMN DETAILED SALES REPORT TABLE (FULL PAGE WIDTH) */}
-      <div className="border border-slate-200 bg-white rounded-xl shadow-xs overflow-hidden">
+      <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse table-auto">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
+              <tr className="bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800">
                 {/* 1. IMAGE LINK */}
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono text-center w-24">
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono text-center w-24">
                   <div className="flex items-center justify-center gap-1 text-center">
                     <ImageIcon size={12} className="text-slate-400" />
                     Image Link
@@ -254,7 +254,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 2. PACKED ON */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                   onClick={() => requestSort('date')}
                 >
                   <div className="flex items-center gap-1.5">
@@ -266,7 +266,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 3. SIMPLIFIED */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                   onClick={() => requestSort('product')}
                 >
                   <div className="flex items-center gap-1.5">
@@ -277,7 +277,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 4. SUM QTY */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors text-right w-28"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors text-right w-28"
                   onClick={() => requestSort('units')}
                 >
                   <div className="flex items-center justify-end gap-1.5">
@@ -288,7 +288,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 5. PORTAL */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors w-36"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors w-36"
                   onClick={() => requestSort('portal')}
                 >
                   <div className="flex items-center gap-1.5">
@@ -299,7 +299,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 6. PRODUCT QUALITY */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors w-36"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors w-36"
                   onClick={() => requestSort('quality')}
                 >
                   <div className="flex items-center gap-1.5">
@@ -310,7 +310,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 7. SIZE */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors text-center w-24"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors text-center w-24"
                   onClick={() => requestSort('size')}
                 >
                   <div className="flex items-center justify-center gap-1.5">
@@ -321,7 +321,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                 {/* 8. COLOUR */}
                 <th 
-                  className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 transition-colors text-center w-28"
+                  className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors text-center w-28"
                   onClick={() => requestSort('colour')}
                 >
                   <div className="flex items-center justify-center gap-1.5">
@@ -331,7 +331,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-sans">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-sans">
               {paginatedData.length > 0 ? (
                 paginatedData.map((row) => {
                   const displayDate = row.date instanceof Date 
@@ -339,7 +339,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                     : String(row.date);
 
                   return (
-                    <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={row.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                       
                       {/* 1. IMAGE LINK DISPLAY */}
                       <td className="p-4 text-center">
@@ -349,7 +349,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                               src={row.imageLink} 
                               alt={row.product} 
                               referrerPolicy="no-referrer"
-                              className="h-10 w-10 rounded-md border border-slate-200 bg-slate-50 object-cover shadow-2xs transition-transform group-hover:scale-105 cursor-zoom-in"
+                              className="h-10 w-10 rounded-md border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800 object-cover shadow-2xs transition-transform group-hover:scale-105 cursor-zoom-in"
                               onClick={() => setSelectedImage(row.imageLink || null)}
                               onError={(e) => {
                                 // Simple fallback if URL breaks
@@ -365,23 +365,23 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-slate-400 italic">No image</span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">No image</span>
                         )}
                       </td>
 
                       {/* 2. PACKED ON */}
-                      <td className="p-4 text-xs font-semibold text-slate-600 font-mono">
+                      <td className="p-4 text-xs font-semibold text-slate-600 dark:text-slate-400 font-mono">
                         {displayDate}
                       </td>
 
                       {/* 3. SIMPLIFIED */}
-                      <td className="p-4 text-xs font-black text-slate-800 max-w-sm">
+                      <td className="p-4 text-xs font-black text-slate-800 dark:text-slate-200 max-w-sm">
                         {row.product}
                       </td>
 
                       {/* 4. SUM QTY */}
-                      <td className="p-4 text-xs font-extrabold text-right font-mono text-blue-600">
-                        {row.units.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 font-normal">pcs</span>
+                      <td className="p-4 text-xs font-extrabold text-right font-mono text-blue-600 dark:text-blue-400">
+                        {row.units.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">pcs</span>
                       </td>
 
                       {/* 5. PORTAL */}
@@ -393,12 +393,12 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                       {/* 6. PRODUCT QUALITY */}
                       <td className="p-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 font-bold">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-bold">
                           <span className={`h-2 w-2 rounded-full ${
                             row.quality?.toLowerCase() === 'premium' || row.quality?.toLowerCase() === 'deluxe'
                               ? 'bg-amber-400' 
                               : row.quality?.toLowerCase() === 'economy' 
-                              ? 'bg-slate-400' 
+                              ? 'bg-slate-400 dark:bg-slate-500' 
                               : 'bg-blue-400'
                           }`}></span>
                           {row.quality || 'Standard'}
@@ -407,14 +407,14 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
                       {/* 7. SIZE */}
                       <td className="p-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 bg-slate-100 border border-slate-200 rounded-md font-mono">
+                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-mono">
                           {row.size || 'M'}
                         </span>
                       </td>
 
                       {/* 8. COLOUR */}
                       <td className="p-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold text-slate-800 bg-slate-50 border border-slate-150 rounded-md">
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-150 dark:border-slate-700 rounded-md">
                           {row.colour || 'Default'}
                         </span>
                       </td>
@@ -424,7 +424,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-xs text-slate-400 font-medium italic">
+                  <td colSpan={8} className="p-12 text-center text-xs text-slate-400 dark:text-slate-500 font-medium italic">
                     No matching sales records found. Adjust your search keywords or reload the source dataset.
                   </td>
                 </tr>
@@ -435,11 +435,11 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
 
         {/* 4. FOOTER PAGINATION CONTROLLER */}
         {sortedData.length > 0 && (
-          <div className="bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-200 text-xs font-semibold text-slate-500">
+          <div className="bg-slate-50/50 dark:bg-slate-850/40 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
             <div>
-              Showing <strong className="font-mono text-slate-800">{Math.min(sortedData.length, (currentPage - 1) * itemsPerPage + 1)}</strong> to{' '}
-              <strong className="font-mono text-slate-800">{Math.min(sortedData.length, currentPage * itemsPerPage)}</strong> of{' '}
-              <strong className="font-mono text-slate-800">{sortedData.length}</strong> total records
+              Showing <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(sortedData.length, (currentPage - 1) * itemsPerPage + 1)}</strong> to{' '}
+              <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(sortedData.length, currentPage * itemsPerPage)}</strong> of{' '}
+              <strong className="font-mono text-slate-800 dark:text-slate-200">{sortedData.length}</strong> total records
             </div>
 
             <div className="flex items-center gap-2">
@@ -447,12 +447,12 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 id="btn-report-prev-page"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+                className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
               >
                 <ChevronLeft size={14} />
               </button>
 
-              <span className="font-mono px-3 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 font-bold">
+              <span className="font-mono px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 font-bold">
                 Page {currentPage} of {totalPages || 1}
               </span>
 
@@ -460,7 +460,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 id="btn-report-next-page"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage >= totalPages}
-                className="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+                className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
               >
                 <ChevronRight size={14} />
               </button>
@@ -477,7 +477,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
           onClick={() => setSelectedImage(null)}
         >
           <div 
-            className="relative max-w-lg w-full bg-white border border-slate-150 p-3 rounded-2xl shadow-2xl flex flex-col animate-in scale-in duration-200"
+            className="relative max-w-lg w-full bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-3 rounded-2xl shadow-2xl flex flex-col animate-in scale-in duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <button 
@@ -496,7 +496,7 @@ export default function SalesReportTable({ records }: SalesReportTableProps) {
                 (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/broken/500/500';
               }}
             />
-            <div className="pt-3.5 pb-1 px-1 flex justify-between items-center text-xs font-semibold text-slate-500 font-mono">
+            <div className="pt-3.5 pb-1 px-1 flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400 font-mono">
               <span>E-Commerce Asset Preview</span>
               <span>1:1 Aspect Cover</span>
             </div>

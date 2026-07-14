@@ -16,14 +16,17 @@ import {
   Search,
   CheckCircle2,
   ListRestart,
-  Upload
+  Upload,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface InventoryPlannerProps {
   records: SalesRecord[];
+  onProductClick?: (product: string) => void;
 }
 
-export default function InventoryPlanner({ records }: InventoryPlannerProps) {
+export default function InventoryPlanner({ records, onProductClick }: InventoryPlannerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [bulkInput, setBulkInput] = useState('');
   const [isBulkOpen, setIsBulkOpen] = useState(false);
@@ -40,6 +43,9 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
   // Sorting state
   const [sortField, setSortField] = useState<'productName' | 'avg3MonthUnits' | 'projected6MDemand' | 'currentStock' | 'shortfall' | 'status'>('shortfall');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Load inventory from localStorage
   const [inventory, setInventory] = useState<Record<string, number>>(() => {
@@ -149,6 +155,10 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         status = 'REORDER'; // Under 6-months requirement
       }
 
+      // Find image link from records only
+      const recordWithImage = records.find(r => r.product === name && r.imageLink);
+      const imageLink = recordWithImage?.imageLink || '';
+
       return {
         productName: name,
         unitsLast3M: g.unitsLast3M,
@@ -156,7 +166,8 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         projected6MDemand,
         currentStock,
         shortfall,
-        status
+        status,
+        imageLink
       };
     });
   }, [records, inventory]);
@@ -475,6 +486,19 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
     return filtered;
   }, [productCalculations, searchQuery, sortField, sortDirection]);
 
+  // Paginated Planner Data
+  const paginatedPlannerData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return processedPlannerData.slice(startIndex, startIndex + itemsPerPage);
+  }, [processedPlannerData, currentPage]);
+
+  const totalPages = Math.ceil(processedPlannerData.length / itemsPerPage);
+
+  // Reset page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   // Overall Inventory Stats
   const plannerStats = useMemo(() => {
     const total6MDemand = productCalculations.reduce((sum, p) => sum + p.projected6MDemand, 0);
@@ -503,7 +527,8 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
         netRequirement: p.shortfall,
         status: p.status === 'CRITICAL' ? 'CRITICAL' : 
                 p.status === 'UNDERSTOCK' ? 'UNDERSTOCK' : 
-                p.status === 'REORDER' ? 'REORDER' : 'SUFFICIENT'
+                p.status === 'REORDER' ? 'REORDER' : 'SUFFICIENT',
+        imageLink: p.imageLink
       }));
       const dateStr = new Date().toISOString().slice(0, 10);
       if (format === 'CSV') {
@@ -763,7 +788,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
 
       {/* SEARCH PRODUCT PLANNER BAR */}
       <div className="relative">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-sans">
           <Search size={14} />
         </span>
         <input
@@ -771,8 +796,8 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           type="text"
           placeholder="Filter planner by product name..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
         />
       </div>
 
@@ -837,34 +862,59 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {processedPlannerData.length > 0 ? (
-              processedPlannerData.map((row) => {
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {paginatedPlannerData.length > 0 ? (
+              paginatedPlannerData.map((row) => {
                 return (
-                  <tr key={row.productName} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={row.productName} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
                     {/* PRODUCT NAME */}
-                    <td className="p-3 text-xs font-semibold text-slate-800 max-w-xs truncate">
-                      {row.productName}
+                    <td className="p-3 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center gap-3">
+                        {row.imageLink ? (
+                          <img 
+                            src={row.imageLink} 
+                            alt={row.productName} 
+                            referrerPolicy="no-referrer"
+                            className="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 shrink-0 shadow-2xs"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                        <div className="flex flex-col min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => onProductClick?.(row.productName)}
+                            className="inline-flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-[#ff9900] transition-colors duration-150 cursor-pointer text-left focus:outline-none font-bold"
+                            title={`Click to filter by product: ${row.productName}`}
+                          >
+                            <span className="truncate max-w-[180px]">{row.productName}</span>
+                            <span className="text-[8px] font-extrabold uppercase font-mono tracking-wider px-1 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-[#ff9900] border border-blue-100 dark:border-slate-700 rounded transition-colors shrink-0">
+                              Filter
+                            </span>
+                          </button>
+                        </div>
+                      </div>
                     </td>
 
                     {/* 3M MONTHLY AVERAGE SALES */}
-                    <td className="p-3 text-xs font-bold text-right font-mono text-slate-700">
-                      {row.avg3MonthUnits.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 font-normal">pcs/mo</span>
+                    <td className="p-3 text-xs font-bold text-right font-mono text-slate-700 dark:text-slate-350">
+                      {row.avg3MonthUnits.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">pcs/mo</span>
                     </td>
 
                     {/* 6M PROJECTED SALES */}
-                    <td className="p-3 text-xs font-bold text-right font-mono text-blue-600">
-                      {row.projected6MDemand.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 font-normal">pcs</span>
+                    <td className="p-3 text-xs font-bold text-right font-mono text-blue-600 dark:text-blue-400">
+                      {row.projected6MDemand.toLocaleString('en-IN')} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">pcs</span>
                     </td>
 
                     {/* INTERACTIVE CURRENT STOCK ON HAND INPUT */}
                     <td className="p-3 text-center">
-                      <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1 gap-1">
+                      <div className="inline-flex items-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 gap-1">
                         <button
                           type="button"
                           onClick={() => adjustStock(row.productName, -10)}
                           title="Decrease by 10"
-                          className="p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                          className="p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 rounded transition-colors cursor-pointer"
                         >
                           <Minus size={12} />
                         </button>
@@ -873,7 +923,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
                           id={`input-stock-${row.productName.replace(/\s+/g, '-').toLowerCase()}`}
                           type="number"
                           min="0"
-                          className="w-16 bg-white border border-slate-150 rounded text-center text-xs font-bold font-mono text-slate-800 focus:outline-none focus:border-emerald-500 p-0.5"
+                          className="w-16 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-750 rounded text-center text-xs font-bold font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 p-0.5"
                           value={row.currentStock}
                           onChange={(e) => handleInventoryChange(row.productName, parseInt(e.target.value, 10) || 0)}
                         />
@@ -882,7 +932,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
                           type="button"
                           onClick={() => adjustStock(row.productName, 10)}
                           title="Increase by 10"
-                          className="p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                          className="p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 rounded transition-colors cursor-pointer"
                         >
                           <Plus size={12} />
                         </button>
@@ -892,11 +942,11 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
                     {/* SHORTFALL STOCK REQUIRED */}
                     <td className="p-3 text-right">
                       {row.shortfall > 0 ? (
-                        <span className="text-xs font-extrabold text-rose-600 font-mono">
+                        <span className="text-xs font-extrabold text-rose-600 dark:text-rose-450 font-mono">
                           +{row.shortfall.toLocaleString('en-IN')} <span className="text-[9px] uppercase tracking-wide">units required</span>
                         </span>
                       ) : (
-                        <span className="text-xs font-bold text-emerald-600 font-mono flex items-center justify-end gap-1">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-450 font-mono flex items-center justify-end gap-1">
                           <Check size={14} /> Sufficient
                         </span>
                       )}
@@ -905,22 +955,22 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
                     {/* STATUS BADGE */}
                     <td className="p-3 text-center">
                       {row.status === 'CRITICAL' && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-rose-700 bg-rose-100 border border-rose-200 rounded-full uppercase tracking-wider font-mono animate-pulse">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-rose-700 bg-rose-100 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60 rounded-full uppercase tracking-wider font-mono animate-pulse">
                           ⚠️ Stockout
                         </span>
                       )}
                       {row.status === 'UNDERSTOCK' && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-amber-700 bg-amber-100 border border-amber-200 rounded-full uppercase tracking-wider font-mono">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-amber-700 bg-amber-100 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/60 rounded-full uppercase tracking-wider font-mono">
                           ⚡ Under-stocked
                         </span>
                       )}
                       {row.status === 'REORDER' && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-orange-700 bg-orange-100 border border-orange-200 rounded-full uppercase tracking-wider font-mono">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-orange-700 bg-orange-100 border border-orange-200 dark:bg-orange-950/40 dark:border-orange-900/60 rounded-full uppercase tracking-wider font-mono">
                           📦 Reorder Req
                         </span>
                       )}
                       {row.status === 'SUFFICIENT' && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-100 border border-emerald-200 rounded-full uppercase tracking-wider font-mono">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/60 rounded-full uppercase tracking-wider font-mono">
                           ✅ Adequate
                         </span>
                       )}
@@ -930,7 +980,7 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
               })
             ) : (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-xs text-slate-400 font-medium">
+                <td colSpan={6} className="p-8 text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
                   {records.length === 0 ? 'Please load sales data to plan requirements.' : 'No matching products found.'}
                 </td>
               </tr>
@@ -938,6 +988,41 @@ export default function InventoryPlanner({ records }: InventoryPlannerProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {processedPlannerData.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <div>
+            Showing <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(processedPlannerData.length, (currentPage - 1) * itemsPerPage + 1)}</strong> to{' '}
+            <strong className="font-mono text-slate-800 dark:text-slate-200">{Math.min(processedPlannerData.length, currentPage * itemsPerPage)}</strong> of{' '}
+            <strong className="font-mono text-slate-800 dark:text-slate-200">{processedPlannerData.length}</strong> products
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              id="btn-planner-prev"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            <span className="font-mono px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 font-bold">
+              Page {currentPage} of {totalPages || 1}
+            </span>
+
+            <button
+              id="btn-planner-next"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage >= totalPages}
+              className="h-8 w-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer shadow-2xs"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -4,6 +4,24 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-blue-50: var(--accent-50);
+  --color-blue-100: var(--accent-100);
+  --color-blue-500: var(--accent-500);
+  --color-blue-600: var(--accent-600);
+  --color-blue-700: var(--accent-700);
+  --color-blue-800: var(--accent-800);
+  --color-blue-900: var(--accent-900);
+  --color-blue-950: var(--accent-950);
+
+  --color-indigo-50: var(--accent-50);
+  --color-indigo-100: var(--accent-100);
+  --color-indigo-500: var(--accent-500);
+  --color-indigo-600: var(--accent-600);
+  --color-indigo-700: var(--accent-700);
+  --color-indigo-800: var(--accent-800);
+  --color-indigo-900: var(--accent-900);
+  --color-indigo-950: var(--accent-950);
 }
 
 :root {
@@ -12,6 +30,16 @@
   --chart-bg: #ffffff;
   --chart-border: #e2e8f0;
   --chart-tooltip-label: #1e293b;
+
+  /* Default Ocean Blue */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+  --accent-800: #1e40af;
+  --accent-900: #1e3a8a;
+  --accent-950: #172554;
 }
 
 .dark {

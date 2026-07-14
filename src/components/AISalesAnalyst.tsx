@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SalesRecord, UserRole } from '../types';
-import { Bot, Sparkles, Key, Send, Cpu, MessageSquare, Trash2, HelpCircle, Eye, EyeOff, Loader2, ArrowRight, Zap, RefreshCw, BarChart2, ShieldAlert } from 'lucide-react';
+import { Bot, Sparkles, Key, Send, Cpu, MessageSquare, Trash2, HelpCircle, Eye, EyeOff, Loader2, ArrowRight, Zap, RefreshCw, BarChart2, ShieldAlert, X } from 'lucide-react';
 
 interface AISalesAnalystProps {
   currentRole: UserRole;
@@ -21,6 +21,50 @@ export default function AISalesAnalyst({ currentRole, records }: AISalesAnalystP
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Live Model retrieval states
+  const [fetchedModels, setFetchedModels] = useState<any[]>([]);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
+  const [isModelModalOpen, setIsModelModalOpen] = useState(false);
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const fetchOpenRouterModels = async () => {
+    setIsFetchingModels(true);
+    setFetchError(null);
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (apiKey.trim()) {
+        headers['Authorization'] = `Bearer ${apiKey.trim()}`;
+      }
+      
+      const res = await fetch('https://openrouter.ai/api/v1/models', {
+        method: 'GET',
+        headers
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Failed to load models list. Status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      if (data && Array.isArray(data.data)) {
+        setFetchedModels(data.data);
+        setIsModelModalOpen(true);
+        setFetchError(null);
+      } else {
+        throw new Error('Invalid response structure from OpenRouter Models API');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setFetchError(err.message || 'Error occurred while loading models list.');
+      alert(`⚠️ Could not fetch live models: ${err.message || err}. Showing pre-configured model list instead.`);
+    } finally {
+      setIsFetchingModels(false);
+    }
+  };
 
   const models = [
     { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast, smart, highly recommended & cost-efficient' },
@@ -70,6 +114,23 @@ Once configured, we can discuss:
   // Save key & model on changes
   useEffect(() => {
     localStorage.setItem('openrouter_api_key', apiKey);
+  }, [apiKey]);
+
+  // Automatically fetch models and open modal when API key is entered
+  useEffect(() => {
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey || trimmedKey.length < 15) return;
+    
+    // Prevent refetching the exact same key during the same session
+    const lastFetchedKey = sessionStorage.getItem('last_fetched_models_key');
+    if (lastFetchedKey === trimmedKey) return;
+
+    const timer = setTimeout(() => {
+      sessionStorage.setItem('last_fetched_models_key', trimmedKey);
+      fetchOpenRouterModels();
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [apiKey]);
 
   useEffect(() => {
@@ -398,10 +459,49 @@ ${err.message || err}
 
           {/* Model selection */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <Sparkles size={12} /> Active Analytics Brain
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles size={12} /> Active Analytics Brain
+              </label>
+              <button
+                type="button"
+                onClick={fetchOpenRouterModels}
+                disabled={isFetchingModels}
+                className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold hover:underline cursor-pointer flex items-center gap-1 shrink-0"
+                title="Fetch and search all models on OpenRouter"
+              >
+                {isFetchingModels ? (
+                  <>
+                    <Loader2 size={10} className="animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Cpu size={10} />
+                    Search 100+ Models
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {fetchError && (
+              <p className="text-[9px] text-rose-500 font-medium leading-normal bg-rose-50 dark:bg-rose-950/20 p-1.5 rounded border border-rose-200/50">
+                ⚠️ {fetchError}
+              </p>
+            )}
+
             <div className="space-y-1.5">
+              {/* Highlight active model if it's not in the default quick-picks list */}
+              {!models.some(m => m.id === selectedModel) && (
+                <div className="p-2.5 rounded-lg border bg-blue-50/60 dark:bg-blue-950/30 border-blue-600 dark:border-blue-500 text-blue-950 dark:text-blue-300">
+                  <span className="text-[11px] font-bold flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+                    Custom: {selectedModel.split('/').pop() || selectedModel}
+                  </span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono block mt-0.5 truncate">{selectedModel}</span>
+                </div>
+              )}
+
               {models.map((m) => (
                 <button
                   key={m.id}
@@ -420,6 +520,14 @@ ${err.message || err}
                 </button>
               ))}
             </div>
+            
+            <button
+              type="button"
+              onClick={fetchOpenRouterModels}
+              className="w-full mt-1.5 py-2 px-3 border border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-lg text-[10px] text-center font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-slate-50/50 dark:bg-slate-900/50"
+            >
+              🔍 Open Dynamic Model Directory Modal
+            </button>
           </div>
         </div>
 
@@ -593,6 +701,147 @@ ${err.message || err}
           </form>
         </div>
       </div>
+
+      {/* OPENROUTER MODELS BROWSER MODAL */}
+      {isModelModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-100 p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-850/50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Cpu className="text-blue-500 shrink-0" size={18} />
+                <div>
+                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                    Live OpenRouter Model Directory
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Showing available models synced in real-time. Click to switch cognitive intelligence.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsModelModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Search Bar */}
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Cpu size={14} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search 100+ OpenRouter models (e.g. gemini, deepseek, gpt, llama, claude)..."
+                  value={modelSearchQuery}
+                  onChange={(e) => setModelSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-lg text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-sans"
+                />
+              </div>
+              {modelSearchQuery && (
+                <button
+                  onClick={() => setModelSearchQuery('')}
+                  className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Modal Body: Filtered list of models */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-slate-50/30 dark:bg-slate-950/10">
+              {(() => {
+                const query = modelSearchQuery.toLowerCase().trim();
+                const filtered = fetchedModels.filter(m => 
+                  m.id.toLowerCase().includes(query) || 
+                  (m.name && m.name.toLowerCase().includes(query)) ||
+                  (m.description && m.description.toLowerCase().includes(query))
+                );
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="text-center py-12">
+                      <HelpCircle size={32} className="mx-auto text-slate-300 mb-2.5" />
+                      <p className="text-xs text-slate-500 font-bold">No models match "{modelSearchQuery}"</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Try searching for other popular names like "gemini", "llama", "claude" or "gpt"</p>
+                    </div>
+                  );
+                }
+
+                return filtered.slice(0, 80).map((m) => {
+                  const isSelected = selectedModel === m.id;
+                  const promptPrice = m.pricing?.prompt ? (parseFloat(m.pricing.prompt) * 1000000).toFixed(2) : '0.00';
+                  const completionPrice = m.pricing?.completion ? (parseFloat(m.pricing.completion) * 1000000).toFixed(2) : '0.00';
+                  const contextLimit = m.context_length ? (m.context_length / 1000).toLocaleString() + 'k' : 'N/A';
+
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setSelectedModel(m.id);
+                        setIsModelModalOpen(false);
+                      }}
+                      className={`w-full text-left p-3.5 rounded-lg border transition-all flex items-start gap-3 cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-600 dark:border-blue-500 text-blue-950 dark:text-blue-300'
+                          : 'bg-white dark:bg-slate-850 border-slate-150 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded-md ${isSelected ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-850 text-slate-400 dark:text-slate-500'}`}>
+                        <Cpu size={14} />
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-black tracking-wide text-slate-800 dark:text-slate-150 truncate block">
+                            {m.name || m.id}
+                          </span>
+                          {isSelected && (
+                            <span className="px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        
+                        <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block truncate">{m.id}</span>
+                        
+                        {m.description && (
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-sans">
+                            {m.description}
+                          </p>
+                        )}
+
+                        {/* Badges and details */}
+                        <div className="flex flex-wrap gap-1.5 pt-1.5">
+                          <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[8px] font-bold font-mono text-slate-500">
+                            Context: {contextLimit}
+                          </span>
+                          <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded text-[8px] font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                            In: ${promptPrice}/M • Out: ${completionPrice}/M
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3 border-t border-slate-150 dark:border-slate-800 bg-slate-50 dark:bg-slate-850/50 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="font-mono">Total Synced: {fetchedModels.length} models</span>
+              <button
+                onClick={() => setIsModelModalOpen(false)}
+                className="px-3 py-1.5 bg-slate-200 hover:bg-slate-250 dark:bg-slate-800 dark:hover:bg-slate-750 font-bold text-slate-700 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+              >
+                Close Directory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
